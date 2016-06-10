@@ -1,0 +1,2 @@
+include ':pusher-websocket-java'
+project(':pusher-websocket-java').projectDir = new File('../pusher-websocket-java')

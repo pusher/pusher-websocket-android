@@ -1,5 +1,7 @@
 package com.pusher.android;
 
+import android.app.Activity;
+import android.content.Intent;
 
 import com.pusher.client.Client;
 import com.pusher.client.Pusher;
@@ -22,16 +24,16 @@ public class PusherAndroid implements Client {
 
     private final Pusher pusher;
 
+    private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
+    private static final String TAG = "MainActivity";
+
     public PusherAndroid(final String apiKey) {
-        this(apiKey, new PusherOptions());
+        this.pusher = new Pusher(apiKey, new PusherOptions());
     }
 
     public PusherAndroid(final String apiKey, final PusherOptions pusherOptions) {
-        this(apiKey, pusherOptions, new Factory());
-    }
+       this.pusher = new Pusher(apiKey, pusherOptions);
 
-    public PusherAndroid(final String apiKey, final PusherOptions pusherOptions, final Factory factory) {
-        this.pusher = new Pusher(apiKey, pusherOptions, factory);
     }
 
     @Override
@@ -103,4 +105,12 @@ public class PusherAndroid implements Client {
     public PresenceChannel getPresenceChannel(String channelName) {
         return this.pusher.getPresenceChannel(channelName);
     }
+
+    public void registerForPushNotifications(Activity activity, String defaultSenderId) {
+        // Start IntentService to register this application with GCM.
+        Intent intent = new Intent(activity, PusherRegistrationIntentService.class);
+        intent.putExtra("gcm_defaultSenderId", defaultSenderId);
+        activity.startService(intent);
+    }
+
 }
