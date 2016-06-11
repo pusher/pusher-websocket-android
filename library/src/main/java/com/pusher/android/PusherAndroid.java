@@ -15,7 +15,6 @@ import com.pusher.client.channel.PrivateChannelEventListener;
 import com.pusher.client.connection.Connection;
 import com.pusher.client.connection.ConnectionEventListener;
 import com.pusher.client.connection.ConnectionState;
-import com.pusher.client.util.Factory;
 
 /**
  * Created by jamiepatel on 09/06/2016.

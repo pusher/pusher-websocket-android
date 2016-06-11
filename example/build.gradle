@@ -37,23 +37,16 @@ android {
 
 repositories {
     mavenCentral()
+    jcenter()
     maven { url 'http://clojars.org/repo' }
 }
-
-//configurations.all {
-//    resolutionStrategy {
-//        force 'com.android.support:design:23.3.0'
-//        force 'com.android.support:support-v4:23.3.0'
-//        force 'com.android.support:appcompat-v7:23.3.0'
-//    }
-//}
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile project(':pusher-websocket-android')
     compile project(':pusher-websocket-java')
-    compile 'com.google.android.gms:play-services:8.4.0'
-//    compile 'com.android.support:appcompat-v7:23.3.0'
+    compile 'com.google.android.gms:play-services-gcm:8.4.0'
+    compile 'com.android.support:appcompat-v7:23.3.0'
 }
 
 apply plugin: 'com.google.gms.google-services'
