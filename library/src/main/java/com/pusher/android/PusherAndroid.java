@@ -1,6 +1,7 @@
 package com.pusher.android;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 
 import com.pusher.client.Client;
@@ -20,19 +21,19 @@ import com.pusher.client.connection.ConnectionState;
  * Created by jamiepatel on 09/06/2016.
  */
 public class PusherAndroid implements Client {
-
     private final Pusher pusher;
-
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     private static final String TAG = "MainActivity";
+    private String apiKey;
+    public static final String PUSH_NOTIFICATION_URL = "https://yolo.ngrok.io";
 
     public PusherAndroid(final String apiKey) {
-        this.pusher = new Pusher(apiKey, new PusherOptions());
+        this(apiKey, new PusherOptions());
     }
 
-    public PusherAndroid(final String apiKey, final PusherOptions pusherOptions) {
-       this.pusher = new Pusher(apiKey, pusherOptions);
-
+    PusherAndroid(final String apiKey, final PusherOptions pusherOptions) {
+        this.apiKey = apiKey;
+        this.pusher = new Pusher(apiKey, pusherOptions);
     }
 
     @Override
@@ -105,11 +106,16 @@ public class PusherAndroid implements Client {
         return this.pusher.getPresenceChannel(channelName);
     }
 
-    public void registerForPushNotifications(Activity activity, String defaultSenderId) {
+    public synchronized void registerForPushNotifications(Activity activity, String defaultSenderId) {
         // Start IntentService to register this application with GCM.
         Intent intent = new Intent(activity, PusherRegistrationIntentService.class);
         intent.putExtra("gcm_defaultSenderId", defaultSenderId);
         activity.startService(intent);
+    }
+
+    public void addPushNotificationInterest(String interest) {
+        PusherPushNotificationRegistration registration = PusherPushNotificationRegistration.getInstance();
+        registration.addInterest(apiKey, interest);
     }
 
 }

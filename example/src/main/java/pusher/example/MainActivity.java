@@ -40,6 +40,7 @@ public class MainActivity extends Activity {
         if (checkPlayServices()) {
             String defaultSenderId = getString(R.string.gcm_defaultSenderId);
             pusher.registerForPushNotifications(this, defaultSenderId);
+            pusher.addPushNotificationInterest("yolo");
         }
     }
 

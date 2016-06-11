@@ -13,11 +13,9 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.android.gms.iid.InstanceID;
-import com.google.gson.JsonObject;
 
 
 import org.json.JSONException;
@@ -33,9 +31,8 @@ import java.util.Map;
  */
 public class PusherRegistrationIntentService extends IntentService {
     private static final String TAG = "PusherRegistrationIntentService";
-    private static final String SERVER_CLIENT_ID_KEY = "__pusher__client__key__";
-    private static final String SERVER_URL = "https://yolo.ngrok.io";
     private static final String PLATFORM_TYPE = "gcm";
+    private static final String PUSHER_PUSH_CLIENT_ID_KEY = "__pusher__client__key__";
 
     public PusherRegistrationIntentService() {
         super(TAG);
@@ -58,18 +55,19 @@ public class PusherRegistrationIntentService extends IntentService {
         }
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        String clientID = sharedPreferences.getString(SERVER_CLIENT_ID_KEY, "");
+        String clientID = sharedPreferences.getString(PUSHER_PUSH_CLIENT_ID_KEY, "");
         RequestQueue queue = Volley.newRequestQueue(this.getApplicationContext());
 
         if (clientID.isEmpty()){
             registerOnServer(queue, token);
         } else {
+            PusherPushNotificationRegistration.getInstance().activate(clientID, PusherRegistrationIntentService.this.getApplicationContext());
             updateRegistrationToken(queue, clientID, token);
         }
     }
 
     private void registerOnServer(RequestQueue queue, String token) {
-        String url = SERVER_URL + "/client_api/v1/clients";
+        String url = PusherAndroid.PUSH_NOTIFICATION_URL + "/client_api/v1/clients";
         JSONObject json = createRegistrationJSON(token);
         JsonObjectRequest request = new JsonObjectRequest(url, json,
                 new Response.Listener<JSONObject>() {
@@ -79,7 +77,8 @@ public class PusherRegistrationIntentService extends IntentService {
                 try {
                     String clientId = response.getString("id");
                     SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(PusherRegistrationIntentService.this);
-                    sharedPreferences.edit().putString(SERVER_CLIENT_ID_KEY, clientId).apply();
+                    sharedPreferences.edit().putString(PUSHER_PUSH_CLIENT_ID_KEY, clientId).apply();
+                    PusherPushNotificationRegistration.getInstance().activate(clientId, PusherRegistrationIntentService.this.getApplicationContext());
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -95,7 +94,7 @@ public class PusherRegistrationIntentService extends IntentService {
 
     private void updateRegistrationToken(RequestQueue queue, String clientId, String token) {
         System.out.println("UPDATING TOKEN");
-        String url = SERVER_URL + "/client_api/v1/clients/" + clientId + "/token";
+        String url = PusherAndroid.PUSH_NOTIFICATION_URL + "/client_api/v1/clients/" + clientId + "/token";
         JSONObject json = createRegistrationJSON(token);
         JsonObjectRequest request = new NoContentJSONObjectRequest(
                 Request.Method.PUT,
@@ -121,29 +120,5 @@ public class PusherRegistrationIntentService extends IntentService {
         params.put("platform_type", PLATFORM_TYPE);
         params.put("token", token);
         return new JSONObject(params);
-    }
-
-    private class NoContentJSONObjectRequest extends JsonObjectRequest {
-
-        public NoContentJSONObjectRequest(int method, String url, JSONObject jsonRequest, Response.Listener<JSONObject> listener, Response.ErrorListener errorListener) {
-            super(method, url, jsonRequest, listener, errorListener);
-        }
-
-        @Override
-        protected Response<JSONObject> parseNetworkResponse(NetworkResponse response) {
-            try {
-                String jsonString = new String(response.data, HttpHeaderParser.parseCharset(response.headers));
-                // here's the new code, if jsonString.length() == 0 don't parse
-                if (jsonString.length() == 0) {
-                    return Response.success(null, HttpHeaderParser.parseCacheHeaders(response));
-                }
-                // end of patch
-                return Response.success(new JSONObject(jsonString), HttpHeaderParser.parseCacheHeaders(response));
-            } catch (UnsupportedEncodingException e) {
-                return Response.error(new ParseError(e));
-            } catch (JSONException je) {
-                return Response.error(new ParseError(je));
-            }
-        }
     }
 }
