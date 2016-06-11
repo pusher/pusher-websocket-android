@@ -15,6 +15,10 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.github.rholder.retry.RetryException;
+import com.github.rholder.retry.Retryer;
+import com.github.rholder.retry.RetryerBuilder;
+import com.github.rholder.retry.StopStrategies;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.android.gms.iid.InstanceID;
 
@@ -26,6 +30,8 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Created by jamiepatel on 10/06/2016.
@@ -34,6 +40,7 @@ public class PusherRegistrationIntentService extends IntentService {
     private static final String TAG = "PusherRegIntentService";
     private static final String PLATFORM_TYPE = "gcm";
     private static final String PUSHER_PUSH_CLIENT_ID_KEY = "__pusher__client__key__";
+    private static final Integer INSTANCE_ID_RETRY_ATTEMPTS = 10;
 
     public PusherRegistrationIntentService() {
         super(TAG);
@@ -42,16 +49,33 @@ public class PusherRegistrationIntentService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
 
-        InstanceID instanceID = InstanceID.getInstance(this);
-        String defaultSenderId = intent.getStringExtra("gcm_defaultSenderId");
+        final InstanceID instanceID = InstanceID.getInstance(this);
+        final String defaultSenderId = intent.getStringExtra("gcm_defaultSenderId");
         String token;
 
+        Callable<String> tokenRetrieval = new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                return instanceID.getToken(defaultSenderId, GoogleCloudMessaging.INSTANCE_ID_SCOPE, null);
+            }
+        };
+
+        Retryer<String> retryer = RetryerBuilder.<String>newBuilder().
+                retryIfRuntimeException().
+                withStopStrategy(StopStrategies.stopAfterAttempt(INSTANCE_ID_RETRY_ATTEMPTS)).
+                build();
+
         try {
-            token = instanceID.getToken(defaultSenderId,
-                    GoogleCloudMessaging.INSTANCE_ID_SCOPE, null);
-        } catch (IOException e) {
-            // TODO: properly handle exception
-            e.printStackTrace();
+            token = retryer.call(tokenRetrieval);
+        } catch (ExecutionException e) {
+            Log.e(TAG, e.getMessage());
+            return;
+        } catch (RetryException e) {
+            Log.e(TAG,
+                    "Failed to get token after " +
+                            INSTANCE_ID_RETRY_ATTEMPTS +
+                            " :" +
+                    e.getMessage());
             return;
         }
 
