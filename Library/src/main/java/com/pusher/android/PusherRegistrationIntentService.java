@@ -145,4 +145,5 @@ public class PusherRegistrationIntentService extends IntentService {
         params.put("token", token);
         return new JSONObject(params);
     }
+
 }
