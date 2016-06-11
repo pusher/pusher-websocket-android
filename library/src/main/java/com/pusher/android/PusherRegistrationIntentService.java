@@ -4,6 +4,7 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 import com.android.volley.NetworkResponse;
 import com.android.volley.ParseError;
@@ -30,7 +31,7 @@ import java.util.Map;
  * Created by jamiepatel on 10/06/2016.
  */
 public class PusherRegistrationIntentService extends IntentService {
-    private static final String TAG = "PusherRegistrationIntentService";
+    private static final String TAG = "PusherRegIntentService";
     private static final String PLATFORM_TYPE = "gcm";
     private static final String PUSHER_PUSH_CLIENT_ID_KEY = "__pusher__client__key__";
 
@@ -73,7 +74,6 @@ public class PusherRegistrationIntentService extends IntentService {
                 new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                System.out.println(response.toString());
                 try {
                     String clientId = response.getString("id");
                     SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(PusherRegistrationIntentService.this);
@@ -86,14 +86,13 @@ public class PusherRegistrationIntentService extends IntentService {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError volleyError) {
-                System.out.print(volleyError);
+                Log.e(TAG, volleyError.getMessage());
             }
         });
         queue.add(request);
     }
 
     private void updateRegistrationToken(RequestQueue queue, String clientId, String token) {
-        System.out.println("UPDATING TOKEN");
         String url = PusherAndroid.PUSH_NOTIFICATION_URL + "/client_api/v1/clients/" + clientId + "/token";
         JSONObject json = createRegistrationJSON(token);
         JsonObjectRequest request = new NoContentJSONObjectRequest(
@@ -104,12 +103,13 @@ public class PusherRegistrationIntentService extends IntentService {
 
             @Override
             public void onResponse(JSONObject response) {
-                System.out.println("GREAT SUCCESSS");
+                Log.d(TAG, "Registration token updated");
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError volleyError) {
                 System.out.println(volleyError);
+                Log.d(TAG, volleyError.getMessage());
             }
         });
         queue.add(request);

@@ -75,7 +75,6 @@ public class PusherPushNotificationRegistration {
         }
 
         public void register() {
-            System.out.println("ADDING INTEREST");
             String url = PusherAndroid.PUSH_NOTIFICATION_URL + "/client_api/v1/clients/" + clientId + "/interests/" + this.name;
             Map<String, String> params = new HashMap<String, String>();
             params.put("app_key", apiKey);
@@ -88,13 +87,12 @@ public class PusherPushNotificationRegistration {
 
                         @Override
                         public void onResponse(JSONObject response) {
-                            System.out.println("INTEREST ADDED");
+                            pendingInterests.remove(Interest.this);
                         }
                     }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError volleyError) {
                     System.out.println(volleyError);
-                    pendingInterests.add(Interest.this);
                 }
             });
             queue.add(request);
