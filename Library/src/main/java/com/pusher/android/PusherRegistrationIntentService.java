@@ -38,9 +38,8 @@ import java.util.concurrent.ExecutionException;
  */
 public class PusherRegistrationIntentService extends IntentService {
     private static final String TAG = "PusherRegIntentService";
-    private static final String PLATFORM_TYPE = "gcm";
-    private static final String PUSHER_PUSH_CLIENT_ID_KEY = "__pusher__client__key__";
     private static final Integer INSTANCE_ID_RETRY_ATTEMPTS = 10;
+
 
     public PusherRegistrationIntentService() {
         super(TAG);
@@ -79,71 +78,7 @@ public class PusherRegistrationIntentService extends IntentService {
             return;
         }
 
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        String clientID = sharedPreferences.getString(PUSHER_PUSH_CLIENT_ID_KEY, "");
-        RequestQueue queue = Volley.newRequestQueue(this.getApplicationContext());
-
-        if (clientID.isEmpty()){
-            registerOnServer(queue, token);
-        } else {
-            PusherPushNotificationRegistration.getInstance().activate(clientID, PusherRegistrationIntentService.this.getApplicationContext());
-            updateRegistrationToken(queue, clientID, token);
-        }
-    }
-
-    private void registerOnServer(RequestQueue queue, String token) {
-        String url = PusherAndroid.PUSH_NOTIFICATION_URL + "/client_api/v1/clients";
-        JSONObject json = createRegistrationJSON(token);
-        JsonObjectRequest request = new JsonObjectRequest(url, json,
-                new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                try {
-                    String clientId = response.getString("id");
-                    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(PusherRegistrationIntentService.this);
-                    sharedPreferences.edit().putString(PUSHER_PUSH_CLIENT_ID_KEY, clientId).apply();
-                    PusherPushNotificationRegistration.getInstance().activate(clientId, PusherRegistrationIntentService.this.getApplicationContext());
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError volleyError) {
-                Log.e(TAG, volleyError.getMessage());
-            }
-        });
-        queue.add(request);
-    }
-
-    private void updateRegistrationToken(RequestQueue queue, String clientId, String token) {
-        String url = PusherAndroid.PUSH_NOTIFICATION_URL + "/client_api/v1/clients/" + clientId + "/token";
-        JSONObject json = createRegistrationJSON(token);
-        JsonObjectRequest request = new NoContentJSONObjectRequest(
-                Request.Method.PUT,
-                url,
-                json,
-                new Response.Listener<JSONObject>() {
-
-            @Override
-            public void onResponse(JSONObject response) {
-                Log.d(TAG, "Registration token updated");
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError volleyError) {
-                System.out.println(volleyError);
-                Log.d(TAG, volleyError.getMessage());
-            }
-        });
-        queue.add(request);
-    }
-
-    private JSONObject createRegistrationJSON(String token) {
-        Map<String, String> params = new HashMap<String, String>();
-        params.put("platform_type", PLATFORM_TYPE);
-        params.put("token", token);
-        return new JSONObject(params);
+        PusherPushNotificationRegistration.getInstance().onReceiveRegistrationToken(token);
     }
 
 }

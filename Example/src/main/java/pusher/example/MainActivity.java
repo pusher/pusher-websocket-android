@@ -10,6 +10,8 @@ import android.view.MenuItem;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.pusher.android.PusherAndroid;
+import com.pusher.android.PusherPushNotificationReceivedListener;
+import com.pusher.android.PusherPushNotificationRegistration;
 import com.pusher.client.connection.ConnectionEventListener;
 import com.pusher.client.connection.ConnectionState;
 import com.pusher.client.connection.ConnectionStateChange;
@@ -39,8 +41,26 @@ public class MainActivity extends Activity {
 
         if (checkPlayServices()) {
             String defaultSenderId = getString(R.string.gcm_defaultSenderId);
-            pusher.registerForPushNotifications(this, defaultSenderId);
-            pusher.addPushNotificationInterest("yolo");
+            PusherPushNotificationRegistration nativePusher = pusher.nativePusher();
+            nativePusher.setMessageReceivedListener(new PusherPushNotificationReceivedListener() {
+                @Override
+                public void onMessageReceieved(String from, Bundle data) {
+                    String message = data.getString("message");
+                    Log.d(TAG, "PUSHER!!!");
+                    Log.d(TAG, "From: " + from);
+                    Log.d(TAG, "Message: " + message);
+
+                    if (from.startsWith("/topics/")) {
+                        // message received from some topic.
+                    } else {
+                        // normal downstream message.
+                    }
+
+                    // ...
+                }
+            });
+            nativePusher.register(this, defaultSenderId);
+            nativePusher.subscribe("yolo");
         }
     }
 

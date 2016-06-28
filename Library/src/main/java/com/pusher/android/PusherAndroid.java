@@ -21,19 +21,18 @@ import com.pusher.client.connection.ConnectionState;
  * Created by jamiepatel on 09/06/2016.
  */
 public class PusherAndroid implements Client {
+
     private final Pusher pusher;
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     private static final String TAG = "MainActivity";
-    private String apiKey;
-    public static final String PUSH_NOTIFICATION_URL = "https://yolo.ngrok.io";
 
     public PusherAndroid(final String apiKey) {
         this(apiKey, new PusherOptions());
     }
 
     PusherAndroid(final String apiKey, final PusherOptions pusherOptions) {
-        this.apiKey = apiKey;
         this.pusher = new Pusher(apiKey, pusherOptions);
+        PusherPushNotificationRegistration.getInstance().setApiKey(apiKey);
     }
 
     @Override
@@ -106,16 +105,8 @@ public class PusherAndroid implements Client {
         return this.pusher.getPresenceChannel(channelName);
     }
 
-    public synchronized void registerForPushNotifications(Activity activity, String defaultSenderId) {
-        // Start IntentService to register this application with GCM.
-        Intent intent = new Intent(activity, PusherRegistrationIntentService.class);
-        intent.putExtra("gcm_defaultSenderId", defaultSenderId);
-        activity.startService(intent);
-    }
-
-    public void addPushNotificationInterest(String interest) {
-        PusherPushNotificationRegistration registration = PusherPushNotificationRegistration.getInstance();
-        registration.addInterest(apiKey, interest);
+    public PusherPushNotificationRegistration nativePusher() {
+        return PusherPushNotificationRegistration.getInstance();
     }
 
 }
