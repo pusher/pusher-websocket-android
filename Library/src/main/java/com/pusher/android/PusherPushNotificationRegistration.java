@@ -50,11 +50,8 @@ public class PusherPushNotificationRegistration {
 
     protected PusherPushNotificationRegistration() {}
 
-    protected void setApiKey(String apiKey) {
-        this.apiKey = apiKey;
-    }
-
     public void register(Context context, String defaultSenderId) {
+        Log.d(TAG, "Registering for native notifications");
         Context applicationContext = context.getApplicationContext();
         this.contextActivation = new ContextActivation(applicationContext, Volley.newRequestQueue(applicationContext));
         Intent intent = new Intent(applicationContext, PusherRegistrationIntentService.class);
@@ -67,16 +64,6 @@ public class PusherPushNotificationRegistration {
         tryFlushOutbox();
     }
 
-    public void setMessageReceivedListener(PusherPushNotificationReceivedListener listener) {
-        this.listener = listener;
-    }
-
-    protected void onMessageReceived(String from, Bundle data) {
-        if (this.listener != null) {
-            this.listener.onMessageReceieved(from, data);
-        }
-    }
-
     public void unsubscribe(String interest) {
         for (Iterator<OutboxItem> iter = outbox.iterator(); iter.hasNext(); ){
             OutboxItem item = iter.next();
@@ -85,6 +72,29 @@ public class PusherPushNotificationRegistration {
             }
         }
         tryFlushOutbox();
+    }
+
+    public void setMessageReceivedListener(PusherPushNotificationReceivedListener listener) {
+        this.listener = listener;
+    }
+
+    protected void setApiKey(String apiKey) {
+        this.apiKey = apiKey;
+    }
+
+    protected void onMessageReceived(String from, Bundle data) {
+        if (this.listener != null) {
+            this.listener.onMessageReceieved(from, data);
+        }
+    }
+
+    protected void onReceiveRegistrationToken(String token) {
+        Log.d(TAG, "Registering received token");
+        if (getClientId() == null) {
+            uploadRegistrationToken(token);
+        } else {
+            updateRegistrationToken(token);
+        }
     }
 
     private void tryFlushOutbox() {
@@ -130,22 +140,14 @@ public class PusherPushNotificationRegistration {
                     }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError volleyError) {
-                    System.out.println(volleyError);
+                    Log.e(TAG, volleyError.getMessage());
                 }
             });
             this.contextActivation.getRequestQueue().add(request);
     }
 
-    protected void onReceiveRegistrationToken(String token) {
-        if (getClientId() == null) {
-            uploadRegistrationToken(token);
-        } else {
-            updateRegistrationToken(token);
-        }
-    }
-
     private void uploadRegistrationToken(String token) {
-        if (contextActivation == null) { // TODO: how likely is this to be null?
+        if (contextActivation == null) {  // Unlikely to be null as this _should_ be called after register().
             return;
         }
 
@@ -174,7 +176,7 @@ public class PusherPushNotificationRegistration {
     }
 
     private void updateRegistrationToken(String token) {
-        if (contextActivation == null) { // TODO: how likely is this to be null?
+        if (contextActivation == null) { // Unlikely to be null as this _should_ be called after register().
             return;
         }
 
@@ -194,8 +196,7 @@ public class PusherPushNotificationRegistration {
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError volleyError) {
-                System.out.println(volleyError);
-                Log.d(TAG, volleyError.getMessage());
+                Log.e(TAG, volleyError.getMessage());
             }
         });
         contextActivation.getRequestQueue().add(request);
