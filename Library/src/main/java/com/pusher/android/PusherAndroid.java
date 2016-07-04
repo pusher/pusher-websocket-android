@@ -1,9 +1,5 @@
 package com.pusher.android;
 
-import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
-
 import com.pusher.client.Client;
 import com.pusher.client.Pusher;
 import com.pusher.client.PusherOptions;
@@ -23,8 +19,6 @@ import com.pusher.client.connection.ConnectionState;
 public class PusherAndroid implements Client {
 
     private final Pusher pusher;
-    private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
-    private static final String TAG = "MainActivity";
 
     public PusherAndroid(final String apiKey) {
         this(apiKey, new PusherOptions());

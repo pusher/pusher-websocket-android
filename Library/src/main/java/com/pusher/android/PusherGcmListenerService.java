@@ -1,6 +1,5 @@
 package com.pusher.android;
 
-import android.nfc.Tag;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -14,6 +13,7 @@ public class PusherGcmListenerService extends GcmListenerService {
 
     @Override
     public void onMessageReceived(String from, Bundle data) {
+        Log.d(TAG, "Received " + data);
         PusherPushNotificationRegistration.getInstance().onMessageReceived(from, data);
     }
 }
