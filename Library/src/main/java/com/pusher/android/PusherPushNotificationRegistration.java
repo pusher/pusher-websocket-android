@@ -239,10 +239,6 @@ public class PusherPushNotificationRegistration {
             this.requestQueue = requestQueue;
         }
 
-        Context getContext() {
-            return context;
-        }
-
         RequestQueue getRequestQueue() {
             return requestQueue;
         }
