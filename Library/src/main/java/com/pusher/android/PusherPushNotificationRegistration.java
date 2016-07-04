@@ -140,7 +140,7 @@ public class PusherPushNotificationRegistration {
                     }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError volleyError) {
-                    Log.e(TAG, volleyError.getMessage());
+                    Log.e(TAG, "Received status " + volleyError.networkResponse.statusCode);
                 }
             });
             this.contextActivation.getRequestQueue().add(request);
@@ -196,7 +196,7 @@ public class PusherPushNotificationRegistration {
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError volleyError) {
-                Log.e(TAG, volleyError.getMessage());
+                Log.e(TAG, "Received status " + volleyError.networkResponse.statusCode);
             }
         });
         contextActivation.getRequestQueue().add(request);

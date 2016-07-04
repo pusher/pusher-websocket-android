@@ -13,7 +13,7 @@ public class PusherGcmListenerService extends GcmListenerService {
 
     @Override
     public void onMessageReceived(String from, Bundle data) {
-        Log.d(TAG, "Received " + data);
+        Log.d(TAG, "Received from GCM: " + data);
         PusherPushNotificationRegistration.getInstance().onMessageReceived(from, data);
     }
 }
