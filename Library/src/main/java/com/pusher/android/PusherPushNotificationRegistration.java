@@ -29,12 +29,16 @@ import java.util.Map;
  */
 public class PusherPushNotificationRegistration {
     private static PusherPushNotificationRegistration instance = null;
-    private static final String PUSH_NOTIFICATION_URL = "https://yolo.ngrok.io";
+    private static String PUSH_NOTIFICATION_URL = "https://yolo.ngrok.io";
     private static final String PLATFORM_TYPE = "gcm";
     private static final String PUSHER_PUSH_CLIENT_ID_KEY = "__pusher__client__key__";
     private static final String TAG = "PusherPushNotifReg";
 
-    private String apiKey;
+    static void setPushNotificationEndpoint(String url) {
+        PUSH_NOTIFICATION_URL = url;
+    }
+
+    private String apiKey; // existence guaranteed by package protection + set in Pusher initializer.
     private String clientId; // existence guaranteed by package protection + set in Pusher initializer.
     private ContextActivation contextActivation;
     private PusherPushNotificationReceivedListener listener;
@@ -48,12 +52,13 @@ public class PusherPushNotificationRegistration {
         return instance;
     }
 
-    protected PusherPushNotificationRegistration() {}
+    private PusherPushNotificationRegistration() {}
 
     public void register(Context context, String defaultSenderId) {
         Log.d(TAG, "Registering for native notifications");
         Context applicationContext = context.getApplicationContext();
-        this.contextActivation = new ContextActivation(applicationContext, Volley.newRequestQueue(applicationContext));
+        RequestQueue requestQueue = Volley.newRequestQueue(context);
+        this.contextActivation = new ContextActivation(applicationContext, requestQueue);
         Intent intent = new Intent(applicationContext, PusherRegistrationIntentService.class);
         intent.putExtra("gcm_defaultSenderId", defaultSenderId);
         applicationContext.startService(intent);
@@ -78,17 +83,17 @@ public class PusherPushNotificationRegistration {
         this.listener = listener;
     }
 
-    protected void setApiKey(String apiKey) {
+    void setApiKey(String apiKey) {
         this.apiKey = apiKey;
     }
 
-    protected void onMessageReceived(String from, Bundle data) {
+    void onMessageReceived(String from, Bundle data) {
         if (this.listener != null) {
             this.listener.onMessageReceieved(from, data);
         }
     }
 
-    protected void onReceiveRegistrationToken(String token) {
+    void onReceiveRegistrationToken(String token) {
         Log.d(TAG, "Registering received token");
         if (getClientId() == null) {
             uploadRegistrationToken(token);
@@ -98,7 +103,7 @@ public class PusherPushNotificationRegistration {
     }
 
     private void tryFlushOutbox() {
-        if (this.clientId != null && this.contextActivation != null && outbox.size() > 0) {
+        if (this.contextActivation != null && outbox.size() > 0 && getClientId() != null) {
             OutboxItem item = (OutboxItem) outbox.remove(0);
             modifySubscription(item, new Runnable() {
                 @Override
@@ -109,7 +114,7 @@ public class PusherPushNotificationRegistration {
         }
     }
 
-    private synchronized String getClientId() {
+    private String getClientId() {
         if (clientId == null) {
             this.clientId = this.contextActivation.getSharedPreferences().getString(PUSHER_PUSH_CLIENT_ID_KEY, null);
         }
@@ -140,7 +145,7 @@ public class PusherPushNotificationRegistration {
                     }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError volleyError) {
-                    Log.e(TAG, "Received status " + volleyError.networkResponse.statusCode);
+                    Log.e(TAG, "Received status " + volleyError.networkResponse.statusCode  +" with:" + volleyError.networkResponse.data.toString());
                 }
             });
             this.contextActivation.getRequestQueue().add(request);
@@ -159,7 +164,6 @@ public class PusherPushNotificationRegistration {
                     public void onResponse(JSONObject response) {
                         try {
                             String clientId = response.getString("id");
-                            PusherPushNotificationRegistration.this.clientId = clientId;
                             contextActivation.getSharedPreferences().edit().putString(PUSHER_PUSH_CLIENT_ID_KEY, clientId).apply();
                             tryFlushOutbox();
                         } catch (JSONException e) {
@@ -169,7 +173,7 @@ public class PusherPushNotificationRegistration {
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError volleyError) {
-                Log.e(TAG, "An error occurred");
+                Log.e(TAG, "Received status " + volleyError.networkResponse.statusCode  +" with:" + volleyError.networkResponse.data.toString());
             }
         });
         contextActivation.getRequestQueue().add(request);
@@ -196,7 +200,7 @@ public class PusherPushNotificationRegistration {
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError volleyError) {
-                Log.e(TAG, "Received status " + volleyError.networkResponse.statusCode);
+                Log.e(TAG, "Received status " + volleyError.networkResponse.statusCode  +" with: " + volleyError.networkResponse.data.toString());
             }
         });
         contextActivation.getRequestQueue().add(request);
@@ -209,6 +213,10 @@ public class PusherPushNotificationRegistration {
         return new JSONObject(params);
     }
 
+    /*
+    An immutable class that represents an intention to either subscribe or unsusbscribe
+    to an interest
+     */
     private class OutboxItem {
         private String interest;
         private InterestSubscriptionChange change;
@@ -231,6 +239,11 @@ public class PusherPushNotificationRegistration {
         SUBSCRIBE, UNSUBSCRIBE
     }
 
+    /*
+    An immutable private class that wraps around objects that depend on an Android context:
+        - Volley Request queue
+        - ApplicationContext
+     */
     private class ContextActivation {
         private Context context;
         private RequestQueue requestQueue;
