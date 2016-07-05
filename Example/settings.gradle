@@ -1,4 +1,2 @@
 include ':pusher-websocket-android'
 project(':pusher-websocket-android').projectDir = new File('../library')
-include 'pusher-websocket-java'
-project(':pusher-websocket-java').projectDir = new File('../pusher-websocket-java')

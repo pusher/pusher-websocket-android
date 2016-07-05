@@ -42,9 +42,7 @@ repositories {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
     compile project(':pusher-websocket-android')
-    compile project(':pusher-websocket-java')
     compile 'com.google.android.gms:play-services-gcm:9.0.2'
     compile 'com.android.support:appcompat-v7:23.4.0'
 }

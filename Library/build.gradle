@@ -11,7 +11,7 @@ apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion 23
-    buildToolsVersion "23.0.1"
+    buildToolsVersion '23.0.3'
 
     defaultConfig {
         minSdkVersion 16
@@ -29,11 +29,11 @@ repositories {
     jcenter()
     maven { url 'http://clojars.org/repo' }
 }
-//
+
 dependencies {
     provided 'com.google.android.gms:play-services-gcm:9.+'
     provided 'com.android.support:appcompat-v7:23.+'
-    compile project(':pusher-websocket-java')
+    compile 'com.pusher:pusher-java-client:1.2.0'
     compile 'com.android.volley:volley:1.0.0'
     compile "com.github.rholder:guava-retrying:2.0.0"
 
