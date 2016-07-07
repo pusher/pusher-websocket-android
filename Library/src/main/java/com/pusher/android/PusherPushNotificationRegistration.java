@@ -7,22 +7,20 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.JsonHttpResponseHandler;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+
+import cz.msebera.android.httpclient.Header;
+import cz.msebera.android.httpclient.entity.StringEntity;
 
 /**
  * Created by jamiepatel on 11/06/2016.
@@ -56,8 +54,7 @@ public class PusherPushNotificationRegistration {
     public void register(Context context, String defaultSenderId) {
         Log.d(TAG, "Registering for native notifications");
         Context applicationContext = context.getApplicationContext();
-        RequestQueue requestQueue = Volley.newRequestQueue(context);
-        this.contextActivation = new ContextActivation(applicationContext, requestQueue);
+        this.contextActivation = new ContextActivation(applicationContext);
         Intent intent = new Intent(applicationContext, PusherRegistrationIntentService.class);
         intent.putExtra("gcm_defaultSenderId", defaultSenderId);
         Log.d(TAG, "Starting registration intent service");
@@ -72,13 +69,7 @@ public class PusherPushNotificationRegistration {
 
     public void unsubscribe(String interest) {
         Log.d(TAG, "Trying to unsubscribe to: " + interest);
-
-        for (Iterator<OutboxItem> iter = outbox.iterator(); iter.hasNext(); ){
-            OutboxItem item = iter.next();
-            if (item.interest.equals(interest)) {
-                iter.remove();
-            }
-        }
+        outbox.add(new OutboxItem(interest, InterestSubscriptionChange.UNSUBSCRIBE));
         tryFlushOutbox();
     }
 
@@ -98,23 +89,61 @@ public class PusherPushNotificationRegistration {
 
     void onReceiveRegistrationToken(String token) {
         Log.d(TAG, "Received token: " + token);
+        StringEntity params = null;
+        try {
+            params = createRegistrationJSON(token);
+        } catch (JSONException e) {
+            Log.e(TAG, e.getMessage());
+        }
         if (getClientId() == null) {
-            uploadRegistrationToken(token);
+            uploadRegistrationToken(token, params);
         } else {
-            updateRegistrationToken(token);
+            updateRegistrationToken(token, params);
         }
     }
 
     private void tryFlushOutbox() {
         Log.d(TAG, "Trying to flushing outbox");
         if (this.contextActivation != null && outbox.size() > 0 && getClientId() != null) {
-            OutboxItem item = (OutboxItem) outbox.remove(0);
-            modifySubscription(item, new Runnable() {
+            final OutboxItem item = (OutboxItem) outbox.remove(0);
+            String url = buildURL("/clients/" + clientId + "/interests/" + item.getInterest());
+            JSONObject json = new JSONObject();
+            try {
+                json.put("app_key", apiKey);
+            } catch (JSONException e) {
+                Log.e(TAG, e.getMessage());
+            }
+            StringEntity entity = new StringEntity(json.toString(), "UTF-8");
+
+            AsyncHttpResponseHandler handler = new AsyncHttpResponseHandler() {
                 @Override
-                public void run() {
+                public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                    Log.d(TAG, "Successfully sent subscription change " + item.getChange() + " for interest: " + item.getInterest());
                     tryFlushOutbox();
                 }
-            });
+
+                @Override
+                public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+                    String log = "[subscription change] " +
+                            "Could not " + item.getChange() + " to " + item.getInterest() + "." +
+                            " Received status " +
+                            statusCode;
+                    if (responseBody != null) log += " with: " + new String(responseBody);
+                    Log.e(TAG, log);
+                    outbox.add(item); // readd item back to the outbox
+                }
+            };
+
+            AsyncHttpClient client = new AsyncHttpClient();
+
+            switch (item.getChange()) {
+                case SUBSCRIBE:
+                    client.post(contextActivation.getContext(), url, entity, "application/json", handler);
+                    break;
+                case UNSUBSCRIBE:
+                    client.delete(contextActivation.getContext(), url, entity, "application/json", handler);
+                    break;
+            }
         }
     }
 
@@ -130,106 +159,83 @@ public class PusherPushNotificationRegistration {
         return scheme + host + "/" + API_PREFIX + "/" + API_VERSION + path;
     }
 
-    private void modifySubscription(final OutboxItem item, final Runnable callback) {
-        String url = buildURL("/clients/" + clientId + "/interests/" + item.getInterest());
-
-        Map<String, String> params = new HashMap<String, String>();
-        params.put("app_key", apiKey);
-
-        int method = Request.Method.POST;
-
-        if (item.getChange() == InterestSubscriptionChange.UNSUBSCRIBE) {
-            method = Request.Method.DELETE;
-        }
-
-        JsonObjectRequest request = new NoContentJSONObjectRequest(
-                method,
-                url,
-                new JSONObject(params),
-                new Response.Listener<JSONObject>() {
-
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        Log.d(TAG, "Successfully sent subscription change " + item.getChange() + " for interest: " + item.getInterest());
-                        callback.run();
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError volleyError) {
-                Log.e(TAG, "Received status " + volleyError.networkResponse.statusCode  +" with:" + volleyError.networkResponse.data.toString());
-            }
-        });
-        this.contextActivation.getRequestQueue().add(request);
-    }
-
     /*
     Uploads registration token for the first time then stores it in SharedPreferences for use
     on subsequent requests
      */
-    private void uploadRegistrationToken(String token) {
+    private void uploadRegistrationToken(String token, StringEntity params) {
         if (contextActivation == null) {  // Unlikely to be null as this _should_ be called after register().
             return;
         }
 
         String url = buildURL("/clients");
-        JSONObject json = createRegistrationJSON(token);
-        JsonObjectRequest request = new JsonObjectRequest(url, json,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            String clientId = response.getString("id");
-                            contextActivation.getSharedPreferences().edit().putString(PUSHER_PUSH_CLIENT_ID_KEY, clientId).apply();
-                            tryFlushOutbox();
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }, new Response.ErrorListener() {
+        AsyncHttpClient client = new AsyncHttpClient(); // cannot use async in an intent service
+
+        client.post(contextActivation.getContext(), url, params, "application/json", new JsonHttpResponseHandler() {
+
             @Override
-            public void onErrorResponse(VolleyError volleyError) {
-                Log.e(TAG, "Received status " + volleyError.networkResponse.statusCode  +" with:" + volleyError.networkResponse.data.toString());
+            public void setUsePoolThread(boolean pool) {
+                super.setUsePoolThread(true);
+            }
+
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                try {
+                    Log.d(TAG, "Uploaded registration token");
+                    String clientId = response.getString("id");
+                    contextActivation.getSharedPreferences().edit().putString(PUSHER_PUSH_CLIENT_ID_KEY, clientId).apply();
+                    tryFlushOutbox();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, String response, Throwable error) {
+                Log.e(TAG, "[token upload] Received status " + statusCode + " with: " + response);
             }
         });
-        contextActivation.getRequestQueue().add(request);
     }
-
 
     /*
     Updates Pusher's mapping of client id to token.
      */
-    private void updateRegistrationToken(String token) {
+    private void updateRegistrationToken(String token, StringEntity params) {
         if (contextActivation == null) { // Unlikely to be null as this _should_ be called after register().
             return;
         }
 
         String url = buildURL("/clients/" + clientId + "/token");
-        JSONObject json = createRegistrationJSON(token);
-        JsonObjectRequest request = new NoContentJSONObjectRequest(
-                Request.Method.PUT,
-                url,
-                json,
-                new Response.Listener<JSONObject>() {
 
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        Log.d(TAG, "Registration token updated");
-                        tryFlushOutbox();
-                    }
-                }, new Response.ErrorListener() {
+        AsyncHttpClient client = new AsyncHttpClient(); // cannot use async in an intent service
+
+        client.put(contextActivation.getContext(), url, params, "application/json", new AsyncHttpResponseHandler() {
+
             @Override
-            public void onErrorResponse(VolleyError volleyError) {
-                Log.e(TAG, "Received status " + volleyError.networkResponse.statusCode  +" with: " + volleyError.networkResponse.data.toString());
+            public void setUsePoolThread(boolean pool) {
+                super.setUsePoolThread(true);
+            }
+
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                Log.d(TAG, "Registration token updated");
+                tryFlushOutbox();
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+                String log = "[token update] Received status " + statusCode;
+                if (responseBody != null) log += " with: " + new String(responseBody);
+                Log.e(TAG, log);
             }
         });
-        contextActivation.getRequestQueue().add(request);
     }
 
-    private JSONObject createRegistrationJSON(String token) {
-        Map<String, String> params = new HashMap<String, String>();
+    private StringEntity createRegistrationJSON(String token) throws JSONException {
+        JSONObject params = new JSONObject();
         params.put("platform_type", PLATFORM_TYPE);
         params.put("token", token);
-        return new JSONObject(params);
+        return new StringEntity(params.toString(), "UTF-8");
     }
 
     public void setEncrypted(boolean encrypted) {
@@ -268,24 +274,22 @@ public class PusherPushNotificationRegistration {
 
     /*
     An immutable private class that wraps around objects that depend on an Android context:
-        - Volley Request queue
+        - SharedPreferences
         - ApplicationContext
      */
     private class ContextActivation {
         private Context context;
-        private RequestQueue requestQueue;
 
-        ContextActivation(Context context, RequestQueue requestQueue) {
+        ContextActivation(Context context) {
             this.context = context;
-            this.requestQueue = requestQueue;
-        }
-
-        RequestQueue getRequestQueue() {
-            return requestQueue;
         }
 
         SharedPreferences getSharedPreferences() {
             return PreferenceManager.getDefaultSharedPreferences(context);
+        }
+
+        Context getContext() {
+            return context;
         }
     }
 }
