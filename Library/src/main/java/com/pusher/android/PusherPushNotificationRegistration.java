@@ -29,19 +29,18 @@ import java.util.Map;
  */
 public class PusherPushNotificationRegistration {
     private static PusherPushNotificationRegistration instance = null;
-    private static String PUSH_NOTIFICATION_URL = "https://yolo.ngrok.io";
     private static final String PLATFORM_TYPE = "gcm";
     private static final String PUSHER_PUSH_CLIENT_ID_KEY = "__pusher__client__key__";
     private static final String TAG = "PusherPushNotifReg";
-
-    static void setPushNotificationEndpoint(String url) {
-        PUSH_NOTIFICATION_URL = url;
-    }
+    private static final String API_PREFIX = "client_api";
+    private static final String API_VERSION = "v1";
 
     private String apiKey; // existence guaranteed by package protection + set in Pusher initializer.
     private String clientId; // existence guaranteed by package protection + set in Pusher initializer.
     private ContextActivation contextActivation;
     private PusherPushNotificationReceivedListener listener;
+    private String host = "nativepushclient-cluster1.pusher.com";
+    private boolean encrypted = true;
 
     private final List outbox = Collections.synchronizedList(new ArrayList<OutboxItem>());
 
@@ -121,34 +120,44 @@ public class PusherPushNotificationRegistration {
         return this.clientId;
     }
 
+    private String scheme(boolean encrypted) {
+        return encrypted ? "https://" : "http://";
+    }
+
+    private String buildURL(String path) {
+        String scheme = encrypted ? "https://" : "http://";
+        return scheme + host + "/" + API_PREFIX + "/" + API_VERSION + path;
+    }
+
     private void modifySubscription(OutboxItem item, final Runnable callback) {
-            String url = PUSH_NOTIFICATION_URL + "/client_api/v1/clients/" + clientId + "/interests/" + item.getInterest();
-            Map<String, String> params = new HashMap<String, String>();
-            params.put("app_key", apiKey);
+        String url = buildURL("/clients" + clientId + "/interests/" + item.getInterest());
 
-            int method = Request.Method.POST;
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("app_key", apiKey);
 
-            if (item.getChange() == InterestSubscriptionChange.UNSUBSCRIBE) {
-                method = Request.Method.DELETE;
+        int method = Request.Method.POST;
+
+        if (item.getChange() == InterestSubscriptionChange.UNSUBSCRIBE) {
+            method = Request.Method.DELETE;
+        }
+
+        JsonObjectRequest request = new NoContentJSONObjectRequest(
+                method,
+                url,
+                new JSONObject(params),
+                new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        callback.run();
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError volleyError) {
+                Log.e(TAG, "Received status " + volleyError.networkResponse.statusCode  +" with:" + volleyError.networkResponse.data.toString());
             }
-
-            JsonObjectRequest request = new NoContentJSONObjectRequest(
-                    method,
-                    url,
-                    new JSONObject(params),
-                    new Response.Listener<JSONObject>() {
-
-                        @Override
-                        public void onResponse(JSONObject response) {
-                            callback.run();
-                        }
-                    }, new Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError volleyError) {
-                    Log.e(TAG, "Received status " + volleyError.networkResponse.statusCode  +" with:" + volleyError.networkResponse.data.toString());
-                }
-            });
-            this.contextActivation.getRequestQueue().add(request);
+        });
+        this.contextActivation.getRequestQueue().add(request);
     }
 
     private void uploadRegistrationToken(String token) {
@@ -156,7 +165,7 @@ public class PusherPushNotificationRegistration {
             return;
         }
 
-        String url = PUSH_NOTIFICATION_URL + "/client_api/v1/clients";
+        String url = buildURL("/client_api/v1/clients");
         JSONObject json = createRegistrationJSON(token);
         JsonObjectRequest request = new JsonObjectRequest(url, json,
                 new Response.Listener<JSONObject>() {
@@ -184,7 +193,7 @@ public class PusherPushNotificationRegistration {
             return;
         }
 
-        String url = PUSH_NOTIFICATION_URL + "/client_api/v1/clients/" + clientId + "/token";
+        String url = buildURL("/client_api/v1/clients/" + clientId + "/token");
         JSONObject json = createRegistrationJSON(token);
         JsonObjectRequest request = new NoContentJSONObjectRequest(
                 Request.Method.PUT,
@@ -211,6 +220,14 @@ public class PusherPushNotificationRegistration {
         params.put("platform_type", PLATFORM_TYPE);
         params.put("token", token);
         return new JSONObject(params);
+    }
+
+    public void setEncrypted(boolean encrypted) {
+        this.encrypted = encrypted;
+    }
+
+    public void setHost(String host) {
+        this.host = host;
     }
 
     /*
