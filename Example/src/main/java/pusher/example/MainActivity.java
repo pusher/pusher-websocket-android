@@ -49,14 +49,6 @@ public class MainActivity extends Activity {
                     Log.d(TAG, "PUSHER!!!");
                     Log.d(TAG, "From: " + from);
                     Log.d(TAG, "Message: " + message);
-
-                    if (from.startsWith("/topics/")) {
-                        // message received from some topic.
-                    } else {
-                        // normal downstream message.
-                    }
-
-                    // ...
                 }
             });
             nativePusher.register(this, defaultSenderId);

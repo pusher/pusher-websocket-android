@@ -60,15 +60,19 @@ public class PusherPushNotificationRegistration {
         this.contextActivation = new ContextActivation(applicationContext, requestQueue);
         Intent intent = new Intent(applicationContext, PusherRegistrationIntentService.class);
         intent.putExtra("gcm_defaultSenderId", defaultSenderId);
+        Log.d(TAG, "Starting registration intent service");
         applicationContext.startService(intent);
     }
 
     public void subscribe(String interest) {
+        Log.d(TAG, "Trying to subscribe to: " + interest);
         outbox.add(new OutboxItem(interest, InterestSubscriptionChange.SUBSCRIBE));
         tryFlushOutbox();
     }
 
     public void unsubscribe(String interest) {
+        Log.d(TAG, "Trying to unsubscribe to: " + interest);
+
         for (Iterator<OutboxItem> iter = outbox.iterator(); iter.hasNext(); ){
             OutboxItem item = iter.next();
             if (item.interest.equals(interest)) {
@@ -93,7 +97,7 @@ public class PusherPushNotificationRegistration {
     }
 
     void onReceiveRegistrationToken(String token) {
-        Log.d(TAG, "Registering received token");
+        Log.d(TAG, "Received token: " + token);
         if (getClientId() == null) {
             uploadRegistrationToken(token);
         } else {
@@ -102,6 +106,7 @@ public class PusherPushNotificationRegistration {
     }
 
     private void tryFlushOutbox() {
+        Log.d(TAG, "Trying to flushing outbox");
         if (this.contextActivation != null && outbox.size() > 0 && getClientId() != null) {
             OutboxItem item = (OutboxItem) outbox.remove(0);
             modifySubscription(item, new Runnable() {
@@ -120,17 +125,13 @@ public class PusherPushNotificationRegistration {
         return this.clientId;
     }
 
-    private String scheme(boolean encrypted) {
-        return encrypted ? "https://" : "http://";
-    }
-
     private String buildURL(String path) {
         String scheme = encrypted ? "https://" : "http://";
         return scheme + host + "/" + API_PREFIX + "/" + API_VERSION + path;
     }
 
-    private void modifySubscription(OutboxItem item, final Runnable callback) {
-        String url = buildURL("/clients" + clientId + "/interests/" + item.getInterest());
+    private void modifySubscription(final OutboxItem item, final Runnable callback) {
+        String url = buildURL("/clients/" + clientId + "/interests/" + item.getInterest());
 
         Map<String, String> params = new HashMap<String, String>();
         params.put("app_key", apiKey);
@@ -149,6 +150,7 @@ public class PusherPushNotificationRegistration {
 
                     @Override
                     public void onResponse(JSONObject response) {
+                        Log.d(TAG, "Successfully sent subscription change " + item.getChange() + " for interest: " + item.getInterest());
                         callback.run();
                     }
                 }, new Response.ErrorListener() {
@@ -160,12 +162,16 @@ public class PusherPushNotificationRegistration {
         this.contextActivation.getRequestQueue().add(request);
     }
 
+    /*
+    Uploads registration token for the first time then stores it in SharedPreferences for use
+    on subsequent requests
+     */
     private void uploadRegistrationToken(String token) {
         if (contextActivation == null) {  // Unlikely to be null as this _should_ be called after register().
             return;
         }
 
-        String url = buildURL("/client_api/v1/clients");
+        String url = buildURL("/clients");
         JSONObject json = createRegistrationJSON(token);
         JsonObjectRequest request = new JsonObjectRequest(url, json,
                 new Response.Listener<JSONObject>() {
@@ -188,12 +194,16 @@ public class PusherPushNotificationRegistration {
         contextActivation.getRequestQueue().add(request);
     }
 
+
+    /*
+    Updates Pusher's mapping of client id to token.
+     */
     private void updateRegistrationToken(String token) {
         if (contextActivation == null) { // Unlikely to be null as this _should_ be called after register().
             return;
         }
 
-        String url = buildURL("/client_api/v1/clients/" + clientId + "/token");
+        String url = buildURL("/clients/" + clientId + "/token");
         JSONObject json = createRegistrationJSON(token);
         JsonObjectRequest request = new NoContentJSONObjectRequest(
                 Request.Method.PUT,
