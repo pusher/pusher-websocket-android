@@ -1,0 +1,35 @@
+{
+  "project_info": {
+    "project_number": "531423512008",
+    "project_id": "androidtest-65299"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:531423512008:android:1e0166b510bd2e2d",
+        "android_client_info": {
+          "package_name": "pusher.example"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAH7LQeGDjrRX1D7a3iwyJu0t75p6fXiXI"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

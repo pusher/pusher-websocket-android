@@ -31,4 +31,8 @@ proguard/
 # Android Studio captures folder
 captures/
 
-.idea/
+.idea/pusher-websocket-android
+*.iml
+pusher-websocket-java/
+
+.idea

@@ -1,0 +1,2 @@
+include ':pusher-websocket-android'
+project(':pusher-websocket-android').projectDir = new File('../library')

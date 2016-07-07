@@ -1,6 +1,5 @@
 package com.pusher.android;
 
-
 import com.pusher.client.Client;
 import com.pusher.client.Pusher;
 import com.pusher.client.PusherOptions;
@@ -13,7 +12,6 @@ import com.pusher.client.channel.PrivateChannelEventListener;
 import com.pusher.client.connection.Connection;
 import com.pusher.client.connection.ConnectionEventListener;
 import com.pusher.client.connection.ConnectionState;
-import com.pusher.client.util.Factory;
 
 /**
  * Created by jamiepatel on 09/06/2016.
@@ -26,12 +24,9 @@ public class PusherAndroid implements Client {
         this(apiKey, new PusherOptions());
     }
 
-    public PusherAndroid(final String apiKey, final PusherOptions pusherOptions) {
-        this(apiKey, pusherOptions, new Factory());
-    }
-
-    public PusherAndroid(final String apiKey, final PusherOptions pusherOptions, final Factory factory) {
-        this.pusher = new Pusher(apiKey, pusherOptions, factory);
+    PusherAndroid(final String apiKey, final PusherOptions pusherOptions) {
+        this.pusher = new Pusher(apiKey, pusherOptions);
+        PusherPushNotificationRegistration.getInstance().setApiKey(apiKey);
     }
 
     @Override
@@ -103,4 +98,9 @@ public class PusherAndroid implements Client {
     public PresenceChannel getPresenceChannel(String channelName) {
         return this.pusher.getPresenceChannel(channelName);
     }
+
+    public PusherPushNotificationRegistration nativePusher() {
+        return PusherPushNotificationRegistration.getInstance();
+    }
+
 }
