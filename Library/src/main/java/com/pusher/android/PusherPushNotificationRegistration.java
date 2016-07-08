@@ -116,6 +116,12 @@ public class PusherPushNotificationRegistration {
             StringEntity entity = new StringEntity(json.toString(), "UTF-8");
 
             AsyncHttpResponseHandler handler = new AsyncHttpResponseHandler() {
+
+                @Override
+                public void setUsePoolThread(boolean pool) {
+                    super.setUsePoolThread(true);
+                }
+
                 @Override
                 public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                     Log.d(TAG, "Successfully sent subscription change " + item.getChange() + " for interest: " + item.getInterest());
