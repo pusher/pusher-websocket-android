@@ -47,7 +47,7 @@ public class MainActivity extends Activity {
             PusherPushNotificationRegistration nativePusher = pusher.nativePusher();
             nativePusher.setMessageReceivedListener(new PusherPushNotificationReceivedListener() {
                 @Override
-                public void onMessageReceieved(String from, Bundle data) {
+                public void onMessageReceived(String from, Bundle data) {
                     String message = data.getString("message");
                     Log.d(TAG, "PUSHER!!!");
                     Log.d(TAG, "From: " + from);

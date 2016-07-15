@@ -32,7 +32,6 @@ public class PusherPushNotificationRegistrationOptions {
 
     String buildURL(String path) {
         String scheme = encrypted ? "https://" : "http://";
-        Log.d("Poptions", "Using host " + host + " for " + path);
         return scheme + host + "/" + API_PREFIX + "/" + API_VERSION + path;
     }
 }

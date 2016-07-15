@@ -97,7 +97,7 @@ public class PusherPushNotificationRegistration {
 
     void onMessageReceived(String from, Bundle data) {
         if (this.messageReceivedListener != null) {
-            this.messageReceivedListener.onMessageReceieved(from, data);
+            this.messageReceivedListener.onMessageReceived(from, data);
         }
     }
 

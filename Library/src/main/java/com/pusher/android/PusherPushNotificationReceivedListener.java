@@ -7,5 +7,5 @@ import android.os.Bundle;
  */
 
 public interface PusherPushNotificationReceivedListener {
-    void onMessageReceieved(String from, Bundle data);
+    void onMessageReceived(String from, Bundle data);
 }

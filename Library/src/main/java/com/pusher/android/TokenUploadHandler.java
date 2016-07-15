@@ -27,9 +27,8 @@ class TokenUploadHandler extends JsonHttpResponseHandler {
     @Override
     public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
         try {
-            Log.d(TAG, "Uploaded registration token");
             String clientId = response.getString("id");
-            Log.d(TAG, "Received id: " + clientId);
+            Log.d(TAG, "Uploaded registration token and received id: " + clientId);
             this.successCallback.onConfirmClientId(clientId);
         } catch (JSONException e) {
             e.printStackTrace();
