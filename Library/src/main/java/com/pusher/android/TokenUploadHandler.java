@@ -38,13 +38,17 @@ class TokenUploadHandler extends JsonHttpResponseHandler {
 
     @Override
     public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-        Log.e(TAG, "[token upload] Received status " + statusCode + " with: " + errorResponse.toString());
-        this.registrationListener.onFailedRegistration(statusCode, errorResponse.toString());
+        onFailure(statusCode, errorResponse.toString());
     }
 
     @Override
     public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
+        onFailure(statusCode, responseString);
+    }
+
+    private void onFailure(int statusCode, String responseString) {
         Log.e(TAG, "[token upload] Received status " + statusCode + " with: " + responseString);
-        this.registrationListener.onFailedRegistration(statusCode, responseString);
+        if (this.registrationListener != null)
+            this.registrationListener.onFailedRegistration(statusCode, responseString);
     }
 }
