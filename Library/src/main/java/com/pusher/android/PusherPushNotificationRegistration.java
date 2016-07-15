@@ -29,7 +29,7 @@ public class PusherPushNotificationRegistration {
     private PusherPushNotificationReceivedListener messageReceivedListener;
     private final Outbox outbox = new Outbox();
     private PusherPushNotificationRegistrationOptions options;
-    private ClientManager clientManager;
+    private SubscriptionManager clientManager;
 
     /*
     Package-protected static method to get the PusherPushNotificationRegistration. If the developer
@@ -111,14 +111,14 @@ public class PusherPushNotificationRegistration {
         }
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        String cachedId = preferences.getString(ClientManager.PUSHER_PUSH_CLIENT_ID_KEY, null);
+        String cachedId = preferences.getString(SubscriptionManager.PUSHER_PUSH_CLIENT_ID_KEY, null);
 
         ClientIdConfirmationListener onReceiveClientID = new ClientIdConfirmationListener() {
             @Override
             public void onConfirmClientId(String id) {
                 PusherPushNotificationRegistration registration = PusherPushNotificationRegistration.this;
                 registration.clientManager =
-                        new ClientManager(id, context, outbox, appKey, options);
+                        new SubscriptionManager(id, context, outbox, appKey, options);
                 if (registration.registrationListener != null)
                     registration.registrationListener.onSuccessfulRegistration();
             }
@@ -133,10 +133,6 @@ public class PusherPushNotificationRegistration {
 
     // Singleton
     private PusherPushNotificationRegistration() {}
-
-    private void addToOutbox(Outbox.Item item) {
-        if (outbox != null) outbox.add(item);
-    }
 
     /*
     Uploads registration token for the first time then stores it in SharedPreferences for use

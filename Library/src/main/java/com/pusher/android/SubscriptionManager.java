@@ -17,7 +17,7 @@ import cz.msebera.android.httpclient.entity.StringEntity;
  * Created by jamiepatel on 15/07/2016.
  */
 
-class ClientManager {
+class SubscriptionManager {
     static final String PUSHER_PUSH_CLIENT_ID_KEY = "__pusher__client__key__";
     private static final String TAG = "PClientManager";
     private final String clientId;
@@ -26,7 +26,7 @@ class ClientManager {
     private final String appKey;
     private final PusherPushNotificationRegistrationOptions options;
 
-    ClientManager(String clientId, Context context, Outbox outbox, String appKey, PusherPushNotificationRegistrationOptions options) {
+    SubscriptionManager(String clientId, Context context, Outbox outbox, String appKey, PusherPushNotificationRegistrationOptions options) {
         this.clientId = clientId;
         this.context = context;
         this.outbox = outbox;
