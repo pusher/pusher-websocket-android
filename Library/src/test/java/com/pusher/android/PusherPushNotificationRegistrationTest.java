@@ -6,7 +6,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 
-import com.android.volley.RequestQueue;
 
 import org.junit.Assert.*;
 import org.junit.Test;
@@ -42,8 +41,6 @@ import static org.robolectric.Shadows.shadowOf;
 @RunWith(RobolectricGradleTestRunner.class)
 @Config(constants = BuildConfig.class)
 public class PusherPushNotificationRegistrationTest {
-
-    private @Mock RequestQueue mRequestQueue;
 
     @Test
     public void testRegistrationIntentStartedOnRegister() {

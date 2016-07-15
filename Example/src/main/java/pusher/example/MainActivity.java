@@ -12,6 +12,9 @@ import com.google.android.gms.common.GoogleApiAvailability;
 import com.pusher.android.PusherAndroid;
 import com.pusher.android.PusherPushNotificationReceivedListener;
 import com.pusher.android.PusherPushNotificationRegistration;
+import com.pusher.android.PusherPushNotificationRegistrationListener;
+import com.pusher.android.PusherPushNotificationRegistrationOptions;
+import com.pusher.android.PusherPushNotificationSubscriptionListener;
 import com.pusher.client.connection.ConnectionEventListener;
 import com.pusher.client.connection.ConnectionState;
 import com.pusher.client.connection.ConnectionStateChange;
@@ -51,8 +54,37 @@ public class MainActivity extends Activity {
                     Log.d(TAG, "Message: " + message);
                 }
             });
-            nativePusher.register(this, defaultSenderId);
-            nativePusher.subscribe("yolo");
+
+            PusherPushNotificationRegistrationOptions options = new PusherPushNotificationRegistrationOptions();
+            options.setHost("yolo.ngrok.io");
+
+            nativePusher.setRegistrationListener(new PusherPushNotificationRegistrationListener() {
+                @Override
+                public void onSuccessfulRegistration() {
+                    System.out.println("REGISTRATION SUCCESSFUL!!! YEEEEEHAWWWWW!");
+                }
+
+                @Override
+                public void onFailedRegistration(int statusCode, String response) {
+                    System.out.println(
+                            "A real sad day. Registration failed with code " + statusCode +
+                                    " " + response
+                    );
+                }
+            });
+
+            nativePusher.register(this, defaultSenderId, options);
+            nativePusher.subscribe("donuts", new PusherPushNotificationSubscriptionListener() {
+                @Override
+                public void onSubscriptionSucceeded() {
+                    System.out.println("DONUT SUCCEEDED W000HOOO!!!");
+                }
+
+                @Override
+                public void onSubscriptionFailed(int statusCode, String response) {
+                    System.out.println("What a disgrace: received " + statusCode + " with" + response);
+                }
+            });
         }
     }
 

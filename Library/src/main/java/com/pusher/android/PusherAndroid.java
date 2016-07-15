@@ -24,9 +24,9 @@ public class PusherAndroid implements Client {
         this(apiKey, new PusherOptions());
     }
 
-    PusherAndroid(final String apiKey, final PusherOptions pusherOptions) {
-        this.pusher = new Pusher(apiKey, pusherOptions);
-        PusherPushNotificationRegistration.getInstance().setApiKey(apiKey);
+    PusherAndroid(final String appKey, final PusherOptions pusherOptions) {
+        this.pusher = new Pusher(appKey, pusherOptions);
+        PusherPushNotificationRegistration.getInstance().setAppKey(appKey);
     }
 
     @Override

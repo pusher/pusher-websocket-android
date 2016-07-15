@@ -59,7 +59,7 @@ public class PusherRegistrationIntentService extends IntentService {
             return;
         }
 
-        PusherPushNotificationRegistration.getInstance().onReceiveRegistrationToken(token);
+        PusherPushNotificationRegistration.getInstance().onReceiveRegistrationToken(token, this.getApplicationContext());
     }
 
 }
