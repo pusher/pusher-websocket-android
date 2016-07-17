@@ -19,12 +19,12 @@ class PusherAndroidFactory {
         return new AsyncHttpClient();
     }
 
-    TokenUploadHandler newTokenUploadHandler(ClientIdConfirmationListener onReceiveClientId, PusherPushNotificationRegistrationListener registrationListener) {
-        return new TokenUploadHandler(onReceiveClientId, registrationListener);
+    TokenUploadHandler newTokenUploadHandler(InternalRegistrationProgressListener internalRegistrationProgressListener) {
+        return new TokenUploadHandler(internalRegistrationProgressListener);
     }
 
-    TokenUpdateHandler newTokenUpdateHandler(Runnable notFoundCallback, ClientIdConfirmationListener listener, String cachedId) {
-        return new TokenUpdateHandler(notFoundCallback, listener, cachedId);
+    TokenUpdateHandler newTokenUpdateHandler(InternalRegistrationProgressListener listener, String cachedId) {
+        return new TokenUpdateHandler(listener, cachedId);
     }
 
     SubscriptionManager newSubscriptionManager(

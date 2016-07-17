@@ -5,8 +5,6 @@ import android.util.Log;
 
 import com.loopj.android.http.AsyncHttpResponseHandler;
 
-import java.util.concurrent.Callable;
-
 import cz.msebera.android.httpclient.Header;
 
 /**
@@ -15,21 +13,19 @@ import cz.msebera.android.httpclient.Header;
 
 class TokenUpdateHandler extends AsyncHttpResponseHandler {
     private static final String TAG = "PTkUpdate";
-    private final Runnable notFoundCallback;
-    private final ClientIdConfirmationListener successCallback;
+    private final InternalRegistrationProgressListener internalRegistrationProgressListener;
     private final String cachedId;
 
-    TokenUpdateHandler(Runnable notFoundCallback, ClientIdConfirmationListener successCallback, String cachedId) {
+    TokenUpdateHandler(InternalRegistrationProgressListener internalListener, String cachedId) {
         super(Looper.getMainLooper());
-        this.notFoundCallback = notFoundCallback;
-        this.successCallback = successCallback;
+        this.internalRegistrationProgressListener = internalListener;
         this.cachedId = cachedId;
     }
 
     @Override
     public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
         Log.d(TAG, "Registration token updated");
-        this.successCallback.onConfirmClientId(cachedId);
+        this.internalRegistrationProgressListener.onSuccess(cachedId);
     }
 
     @Override
@@ -39,6 +35,7 @@ class TokenUpdateHandler extends AsyncHttpResponseHandler {
         Log.e(TAG, log);
 
         // the client ID cannot be found and we need to reregister to get a fresh one.
-        if (statusCode == 404) this.notFoundCallback.run();
+        if (statusCode == 404)
+            this.internalRegistrationProgressListener.onNotFound();
     }
 }

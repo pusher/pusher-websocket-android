@@ -1,6 +1,5 @@
 package com.pusher.android;
 
-import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.loopj.android.http.JsonHttpResponseHandler;
@@ -16,12 +15,10 @@ import cz.msebera.android.httpclient.Header;
 
 class TokenUploadHandler extends JsonHttpResponseHandler {
     private static final String TAG = "PUploadSuccess";
-    private final ClientIdConfirmationListener successCallback;
-    private final PusherPushNotificationRegistrationListener registrationListener;
+    private final InternalRegistrationProgressListener callback;
 
-    TokenUploadHandler(ClientIdConfirmationListener successCallback, PusherPushNotificationRegistrationListener registrationListener) {
-        this.successCallback = successCallback;
-        this.registrationListener = registrationListener;
+    TokenUploadHandler(InternalRegistrationProgressListener callback) {
+        this.callback = callback;
     }
 
     @Override
@@ -29,7 +26,7 @@ class TokenUploadHandler extends JsonHttpResponseHandler {
         try {
             String clientId = response.getString("id");
             Log.d(TAG, "Uploaded registration token and received id: " + clientId);
-            this.successCallback.onConfirmClientId(clientId);
+            this.callback.onSuccess(clientId);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -47,7 +44,6 @@ class TokenUploadHandler extends JsonHttpResponseHandler {
 
     private void onFailure(int statusCode, String responseString) {
         Log.e(TAG, "[token upload] Received status " + statusCode + " with: " + responseString);
-        if (this.registrationListener != null)
-            this.registrationListener.onFailedRegistration(statusCode, responseString);
+        this.callback.onFailure(statusCode, responseString);
     }
 }

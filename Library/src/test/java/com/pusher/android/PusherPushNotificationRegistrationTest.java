@@ -13,6 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.RobolectricGradleTestRunner;
@@ -34,6 +35,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -65,11 +67,10 @@ public class PusherPushNotificationRegistrationTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        when(factory.newTokenUploadHandler(any(ClientIdConfirmationListener.class), any(PusherPushNotificationRegistrationListener.class))).thenReturn(tokenUploadHandler);
+        when(factory.newTokenUploadHandler(any(InternalRegistrationProgressListener.class))).thenReturn(tokenUploadHandler);
         when(factory.newAsyncHttpClient()).thenReturn(client);
         when(factory.newTokenUpdateHandler(
-                any(Runnable.class),
-                any(ClientIdConfirmationListener.class),
+                any(InternalRegistrationProgressListener.class),
                 any(String.class))
         ).thenReturn(tokenUpdateHandler);
         when(factory.newSubscriptionManager(
@@ -109,22 +110,15 @@ public class PusherPushNotificationRegistrationTest {
 
     @Test
     public void testCachedIdVerificationTriggersRegistrationSuccessCallback() throws IOException {
-        UpdateCaptors captors = testUpdate();
-        testClientIdConfirmation(captors.successCallback);
+        InternalRegistrationProgressListener internalRegistrationProgressListener = testUpdate();
+        testClientIdConfirmation(internalRegistrationProgressListener);
     }
 
     @Test
     public void testCachedIdNotFoundTriggersReupload() throws IOException {
-        UpdateCaptors captors = testUpdate();
-        captors.notFoundCallback.run();
+        InternalRegistrationProgressListener internalRegistrationProgressListener = testUpdate();
+        internalRegistrationProgressListener.onNotFound();
         testUpload();
-    }
-
-    @Test
-    public void testSubscriptionChangeFailsUnregistered() {
-        registration.subscribe("donuts", subscriptionListener);
-        registration.unsubscribe("donuts", subscriptionListener);
-        verify(subscriptionListener, times(2)).onSubscriptionChangeFailed(0, "Registration still pending");
     }
 
     @Test
@@ -137,6 +131,19 @@ public class PusherPushNotificationRegistrationTest {
 
         registration.unsubscribe("donuts", subscriptionListener);
         verify(subscriptionManager).sendSubscriptionChange("donuts", InterestSubscriptionChange.UNSUBSCRIBE, subscriptionListener);
+    }
+
+    @Test
+    public void testPendingSubscriptionChangesSentOnRegister() throws IOException {
+        registration.subscribe("donuts", subscriptionListener);
+        registration.unsubscribe("donuts", subscriptionListener);
+        beginRegistration();
+        sendGcmTokenReceivedBroadcast();
+        testUpload();
+
+        InOrder inOrder = inOrder(subscriptionManager);
+        inOrder.verify(subscriptionManager, times(1)).sendSubscriptionChange("donuts", InterestSubscriptionChange.SUBSCRIBE, subscriptionListener);
+        inOrder.verify(subscriptionManager, times(1)).sendSubscriptionChange("donuts", InterestSubscriptionChange.UNSUBSCRIBE, subscriptionListener);
     }
 
     private void beginRegistration() {
@@ -160,12 +167,10 @@ public class PusherPushNotificationRegistrationTest {
 
     private void testUpload() throws IOException {
 
-        ArgumentCaptor clientIdListenerCaptor = ArgumentCaptor.forClass(ClientIdConfirmationListener.class);
-        ArgumentCaptor registrationListenerCaptor = ArgumentCaptor.forClass(PusherPushNotificationRegistrationListener.class);
+        ArgumentCaptor internalListener = ArgumentCaptor.forClass(InternalRegistrationProgressListener.class);
 
         verify(factory).newTokenUploadHandler(
-                (ClientIdConfirmationListener) clientIdListenerCaptor.capture(),
-                (PusherPushNotificationRegistrationListener) registrationListenerCaptor.capture());
+                (InternalRegistrationProgressListener) internalListener.capture());
 
         ArgumentCaptor paramsCaptor = ArgumentCaptor.forClass(StringEntity.class);
 
@@ -183,13 +188,13 @@ public class PusherPushNotificationRegistrationTest {
                 EntityUtils.toString(params),
                 "{\"platform_type\":\"gcm\",\"token\":\"mysuperspecialgcmtoken\",\"app_key\":\"superkey\"}"
         );
-        ClientIdConfirmationListener clientIdListener = (ClientIdConfirmationListener) clientIdListenerCaptor.getValue();
+        InternalRegistrationProgressListener clientIdListener = (InternalRegistrationProgressListener) internalListener.getValue();
         testClientIdConfirmation(clientIdListener);
     }
 
-    private void testClientIdConfirmation(ClientIdConfirmationListener clientIdListener) {
+    private void testClientIdConfirmation(InternalRegistrationProgressListener internalRegistrationProgressListener) {
         // Test client id listener
-        clientIdListener.onConfirmClientId("this-is-the-client-id");
+        internalRegistrationProgressListener.onSuccess("this-is-the-client-id");
         verify(factory).newSubscriptionManager(
                 eq("this-is-the-client-id"),
                 eq(context),
@@ -201,18 +206,16 @@ public class PusherPushNotificationRegistrationTest {
         verify(registrationListener).onSuccessfulRegistration();
     }
 
-    private UpdateCaptors testUpdate() throws IOException {
+    private InternalRegistrationProgressListener testUpdate() throws IOException {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         sharedPreferences.edit().putString(SubscriptionManager.PUSHER_PUSH_CLIENT_ID_KEY, "cached-id").apply();
         beginRegistration();
         sendGcmTokenReceivedBroadcast();
 
-        ArgumentCaptor notFoundCallbackCaptor = ArgumentCaptor.forClass(Runnable.class);
-        ArgumentCaptor clientIdListenerCaptor = ArgumentCaptor.forClass(ClientIdConfirmationListener.class);
+        ArgumentCaptor clientIdListenerCaptor = ArgumentCaptor.forClass(InternalRegistrationProgressListener.class);
 
         verify(factory).newTokenUpdateHandler(
-                (Runnable) notFoundCallbackCaptor.capture(),
-                (ClientIdConfirmationListener) clientIdListenerCaptor.capture(),
+                (InternalRegistrationProgressListener) clientIdListenerCaptor.capture(),
                 eq("cached-id")
         );
 
@@ -230,17 +233,7 @@ public class PusherPushNotificationRegistrationTest {
                 EntityUtils.toString((HttpEntity) paramsCaptor.getValue()),
                 "{\"platform_type\":\"gcm\",\"token\":\"mysuperspecialgcmtoken\",\"app_key\":\"superkey\"}"
         );
-        return new UpdateCaptors((Runnable) notFoundCallbackCaptor.getValue(), (ClientIdConfirmationListener) clientIdListenerCaptor.getValue());
+        return (InternalRegistrationProgressListener) clientIdListenerCaptor.getValue();
     }
 
-    // so we can stack tests on one another based on the captors of the previous test
-    private class UpdateCaptors {
-        public final Runnable notFoundCallback;
-        public final ClientIdConfirmationListener successCallback;
-
-        private UpdateCaptors(Runnable notFoundCallback, ClientIdConfirmationListener successCallback) {
-            this.notFoundCallback = notFoundCallback;
-            this.successCallback = successCallback;
-        }
-    }
 }
