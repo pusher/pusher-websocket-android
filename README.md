@@ -31,10 +31,13 @@ This set up will assume:
 Add to your `AndroidManifest.xml` the following:
 
 ```xml
-  <!-- GCM permissions -->
-  <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
-  <uses-permission android:name="android.permission.WAKE_LOCK" />
 
+<!-- <manifest> -->
+<!-- GCM permissions -->
+<uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+<uses-permission android:name="android.permission.WAKE_LOCK" />
+
+<!-- <application> -->
 <!-- GCM Receiver  -->
 <receiver
     android:name="com.google.android.gms.gcm.GcmReceiver"
