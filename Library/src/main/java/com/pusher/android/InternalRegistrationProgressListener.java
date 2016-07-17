@@ -7,5 +7,5 @@ package com.pusher.android;
 interface InternalRegistrationProgressListener {
     void onSuccess(String id);
     void onFailure(int statusCode, String reason);
-    void onNotFound();
+    void onClientIdInvalid();
 }

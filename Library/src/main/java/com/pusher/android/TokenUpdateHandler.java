@@ -38,6 +38,6 @@ class TokenUpdateHandler extends AsyncHttpResponseHandler {
         // If the 404 is for a different reason, it'll fall down at the next hurdle
         // (uploading the token) anyway.
         if (statusCode == 404)
-            this.internalRegistrationProgressListener.onNotFound();
+            this.internalRegistrationProgressListener.onClientIdInvalid();
     }
 }

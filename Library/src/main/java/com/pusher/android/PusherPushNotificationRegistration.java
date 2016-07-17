@@ -37,7 +37,7 @@ public class PusherPushNotificationRegistration {
     private final String appKey;
     private final PusherAndroidOptions options;
     private final PusherAndroidFactory factory;
-    private SubscriptionManager clientManager;
+    private SubscriptionManager subscriptionManager; // should only exist on successful registration with Pusher
     private final List<PusherPushNotificationRegistrationListener> pendingSubscriptions =
             Collections.synchronizedList(new ArrayList<PusherPushNotificationRegistrationListener>());
 
@@ -122,13 +122,13 @@ public class PusherPushNotificationRegistration {
             final InterestSubscriptionChange change,
             final PusherPushNotificationSubscriptionChangeListener listener) {
         Log.d(TAG, "Trying to "+change+" to: " + interest);
-        if (clientManager != null) {
-            clientManager.sendSubscriptionChange(interest, change, listener);
+        if (subscriptionManager != null) {
+            subscriptionManager.sendSubscriptionChange(interest, change, listener);
         } else {
             pendingSubscriptions.add(new PusherPushNotificationRegistrationListener() {
                 @Override
                 public void onSuccessfulRegistration() {
-                    clientManager.sendSubscriptionChange(interest, change, listener);
+                    subscriptionManager.sendSubscriptionChange(interest, change, listener);
                 }
 
                 @Override
@@ -147,7 +147,7 @@ public class PusherPushNotificationRegistration {
     }
 
     /*
-    This checkes SharedPreferences to see if the library has cached the Pusher client id.
+    This checks SharedPreferences to see if the library has cached the Pusher client id.
     If so, it will try and update the token associated with that client id.
     If not it will POST a new client.
      */
@@ -171,7 +171,7 @@ public class PusherPushNotificationRegistration {
             @Override
             public void onSuccess(String id) {
                 PusherPushNotificationRegistration registration = PusherPushNotificationRegistration.this;
-                registration.clientManager =
+                registration.subscriptionManager =
                         factory.newSubscriptionManager(id, context, appKey, options);
                 if (registrationListener != null) {
                     registrationListener.onSuccessfulRegistration();
@@ -193,7 +193,7 @@ public class PusherPushNotificationRegistration {
 
 
             @Override
-            public void onNotFound() {
+            public void onClientIdInvalid() {
                 uploadRegistrationToken(context, token, finalParams, this);
             }
 

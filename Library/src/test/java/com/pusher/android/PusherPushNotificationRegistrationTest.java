@@ -117,7 +117,7 @@ public class PusherPushNotificationRegistrationTest {
     @Test
     public void testCachedIdNotFoundTriggersReupload() throws IOException {
         InternalRegistrationProgressListener internalRegistrationProgressListener = testUpdate();
-        internalRegistrationProgressListener.onNotFound();
+        internalRegistrationProgressListener.onClientIdInvalid();
         testUpload();
     }
 
