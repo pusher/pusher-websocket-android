@@ -58,22 +58,6 @@ public class MainActivity extends Activity {
                 }
             });
 
-            nativePusher.setRegistrationListener(new PusherPushNotificationRegistrationListener() {
-                @Override
-                public void onSuccessfulRegistration() {
-                    System.out.println("REGISTRATION SUCCESSFUL!!! YEEEEEHAWWWWW!");
-                }
-
-                @Override
-                public void onFailedRegistration(int statusCode, String response) {
-                    System.out.println(
-                            "A real sad day. Registration failed with code " + statusCode +
-                                    " " + response
-                    );
-                }
-            });
-
-            nativePusher.register(this, defaultSenderId);
             nativePusher.subscribe("donuts", new PusherPushNotificationSubscriptionChangeListener() {
                 @Override
                 public void onSubscriptionChangeSucceeded() {
@@ -83,6 +67,23 @@ public class MainActivity extends Activity {
                 @Override
                 public void onSubscriptionChangeFailed(int statusCode, String response) {
                     System.out.println("What a disgrace: received " + statusCode + " with" + response);
+                }
+            });
+
+
+            nativePusher.register(this, defaultSenderId, new PusherPushNotificationRegistrationListener() {
+                @Override
+                public void onSuccessfulRegistration() {
+                    System.out.println("REGISTRATION SUCCESSFUL!!! YEEEEEHAWWWWW!");
+
+                }
+
+                @Override
+                public void onFailedRegistration(int statusCode, String response) {
+                    System.out.println(
+                            "A real sad day. Registration failed with code " + statusCode +
+                                    " " + response
+                    );
                 }
             });
         }

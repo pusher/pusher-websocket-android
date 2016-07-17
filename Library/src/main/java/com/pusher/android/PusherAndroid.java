@@ -29,8 +29,8 @@ public class PusherAndroid implements Client {
         this(appKey, pusherOptions, new PusherAndroidFactory());
     }
 
-    PusherAndroid(final String appKey,
-                         final PusherAndroidOptions pusherOptions, final PusherAndroidFactory factory) {
+    private PusherAndroid(final String appKey,
+                          final PusherAndroidOptions pusherOptions, final PusherAndroidFactory factory) {
         this.pusher = new Pusher(appKey, pusherOptions);
         this.pusherPushNotificationRegistration =
                 new PusherPushNotificationRegistration(appKey, pusherOptions, factory);
