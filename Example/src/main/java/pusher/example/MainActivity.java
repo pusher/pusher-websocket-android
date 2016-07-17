@@ -1,7 +1,6 @@
 package pusher.example;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -14,7 +13,7 @@ import com.pusher.android.PusherAndroidOptions;
 import com.pusher.android.PusherPushNotificationReceivedListener;
 import com.pusher.android.PusherPushNotificationRegistration;
 import com.pusher.android.PusherPushNotificationRegistrationListener;
-import com.pusher.android.PusherPushNotificationSubscriptionListener;
+import com.pusher.android.PusherPushNotificationSubscriptionChangeListener;
 import com.pusher.client.connection.ConnectionEventListener;
 import com.pusher.client.connection.ConnectionState;
 import com.pusher.client.connection.ConnectionStateChange;
@@ -75,14 +74,14 @@ public class MainActivity extends Activity {
             });
 
             nativePusher.register(this, defaultSenderId);
-            nativePusher.subscribe("donuts", new PusherPushNotificationSubscriptionListener() {
+            nativePusher.subscribe("donuts", new PusherPushNotificationSubscriptionChangeListener() {
                 @Override
-                public void onSubscriptionSucceeded() {
+                public void onSubscriptionChangeSucceeded() {
                     System.out.println("DONUT SUCCEEDED W000HOOO!!!");
                 }
 
                 @Override
-                public void onSubscriptionFailed(int statusCode, String response) {
+                public void onSubscriptionChangeFailed(int statusCode, String response) {
                     System.out.println("What a disgrace: received " + statusCode + " with" + response);
                 }
             });

@@ -12,14 +12,17 @@ import cz.msebera.android.httpclient.Header;
 
 class SubscriptionChangeHandler extends AsyncHttpResponseHandler {
     private static final String TAG = "PSubHandler";
-    private final Runnable successCallback;
-    private final Outbox.Item item;
+    private final String interest;
+    private final InterestSubscriptionChange change;
+    private final PusherPushNotificationSubscriptionChangeListener listener;
 
     SubscriptionChangeHandler(
-            Outbox.Item item,
-            Runnable successCallback) {
-        this.item = item;
-        this.successCallback = successCallback;
+            String interest,
+            InterestSubscriptionChange change,
+            PusherPushNotificationSubscriptionChangeListener listener) {
+        this.interest = interest;
+        this.change = change;
+        this.listener = listener;
     }
 
     @Override
@@ -30,9 +33,8 @@ class SubscriptionChangeHandler extends AsyncHttpResponseHandler {
 
     @Override
     public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
-        Log.d(TAG, "Successfully sent subscription change " + item.getChange() + " for interest: " + item.getInterest());
-        if (item.getListener() != null) item.getListener().onSubscriptionSucceeded();
-        if (this.successCallback != null) this.successCallback.run();
+        Log.d(TAG, "Successfully sent subscription change " + change + " for interest: " + interest);
+        if (listener != null) listener.onSubscriptionChangeSucceeded();
     }
 
     @Override
@@ -46,7 +48,7 @@ class SubscriptionChangeHandler extends AsyncHttpResponseHandler {
 
         Log.e("PInterestSubChange", log);
         Log.e(TAG, "[subscription change] " +
-                "Could not " + item.getChange() + " to " + item.getInterest() + ".");
-        if (item.getListener() != null) item.getListener().onSubscriptionFailed(statusCode, responseBodyString);
+                "Could not " + change + " to " + interest + ".");
+        if (listener != null) listener.onSubscriptionChangeFailed(statusCode, responseBodyString);
     }
 }

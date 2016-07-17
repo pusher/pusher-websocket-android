@@ -8,8 +8,11 @@ import com.loopj.android.http.AsyncHttpClient;
  * Created by jamiepatel on 12/07/2016.
  */
 class PusherAndroidFactory {
-    SubscriptionChangeHandler newSubscriptionChangeHandler(Outbox.Item item, Runnable successCallback) {
-        return new SubscriptionChangeHandler(item, successCallback);
+    SubscriptionChangeHandler newSubscriptionChangeHandler(
+            String interest,
+            InterestSubscriptionChange change,
+            PusherPushNotificationSubscriptionChangeListener listener) {
+        return new SubscriptionChangeHandler(interest, change, listener);
     }
 
     AsyncHttpClient newAsyncHttpClient() {
@@ -27,10 +30,9 @@ class PusherAndroidFactory {
     SubscriptionManager newSubscriptionManager(
             String clientId,
             Context context,
-            Outbox outbox,
             String appKey,
             PusherAndroidOptions options
     ) {
-        return new SubscriptionManager(clientId, context, outbox, appKey, options, this);
+        return new SubscriptionManager(clientId, context, appKey, options, this);
     }
 }

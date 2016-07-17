@@ -57,6 +57,8 @@ public class PusherRegistrationIntentService extends IntentService {
                             INSTANCE_ID_RETRY_ATTEMPTS +
                             " :" +
                     e.getMessage());
+            Intent failedToGetToken = new Intent(PusherPushNotificationRegistration.TOKEN_FAILED_INTENT_FILTER);
+            LocalBroadcastManager.getInstance(this).sendBroadcast(failedToGetToken);
             return;
         }
 

@@ -22,7 +22,6 @@ class SubscriptionManager {
     private static final String TAG = "PClientManager";
     private final String clientId;
     private final Context context;
-    private final Outbox outbox;
     private final String appKey;
     private final PusherAndroidOptions options;
     private final PusherAndroidFactory factory;
@@ -30,52 +29,41 @@ class SubscriptionManager {
     SubscriptionManager(
             String clientId,
             Context context,
-            Outbox outbox,
             String appKey,
             PusherAndroidOptions options,
             PusherAndroidFactory factory
     ) {
         this.clientId = clientId;
         this.context = context;
-        this.outbox = outbox;
         this.appKey = appKey;
         this.options = options;
         this.factory = factory;
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
         preferences.edit().putString(PUSHER_PUSH_CLIENT_ID_KEY, clientId).apply();
-        flushOutbox();
     }
 
-    void flushOutbox() {
-        Log.d(TAG, "Trying to flushing outbox");
-        if (outbox.size() > 0) {
-            final Outbox.Item item = outbox.remove(0);
-            JSONObject json = new JSONObject();
-            try {
-                json.put("app_key", appKey);
-            } catch (JSONException e) {
-                Log.e(TAG, e.getMessage());
-            }
-            StringEntity entity = new StringEntity(json.toString(), "UTF-8");
+    void sendSubscriptionChange(String interest, InterestSubscriptionChange change, PusherPushNotificationSubscriptionChangeListener listener) {
+        JSONObject json = new JSONObject();
+        try {
+            json.put("app_key", appKey);
+        } catch (JSONException e) {
+            Log.e(TAG, e.getMessage());
+        }
+        StringEntity entity = new StringEntity(json.toString(), "UTF-8");
 
-            Runnable successCallback = new Runnable() {
-                @Override
-                public void run() {
-                    flushOutbox();
-                }
-            };
-
-            String url = options.buildNotificationURL("/clients/" + clientId + "/interests/") + item.getInterest();
-            ResponseHandlerInterface handler = factory.newSubscriptionChangeHandler(item, successCallback);
-            AsyncHttpClient client = factory.newAsyncHttpClient();
-            switch (item.getChange()) {
-                case SUBSCRIBE:
-                    client.post(context, url, entity, "application/json", handler);
-                    break;
-                case UNSUBSCRIBE:
-                    client.delete(context, url, entity, "application/json", handler);
-                    break;
-            }
+        String url = options.buildNotificationURL("/clients/" + clientId + "/interests/" + interest);
+        ResponseHandlerInterface handler = factory.newSubscriptionChangeHandler(
+                interest,
+                change,
+                listener);
+        AsyncHttpClient client = factory.newAsyncHttpClient();
+        switch (change) {
+            case SUBSCRIBE:
+                client.post(context, url, entity, "application/json", handler);
+                break;
+            case UNSUBSCRIBE:
+                client.delete(context, url, entity, "application/json", handler);
+                break;
         }
     }
 }
