@@ -8,8 +8,6 @@ import com.google.android.gms.iid.InstanceIDListenerService;
  * Created by jamiepatel on 10/06/2016.
  */
 public class PusherInstanceIDListenerService extends InstanceIDListenerService {
-    private static final String TAG = "PusherInstanceIDLS";
-
     /**
      * Called if InstanceID token is updated. This may occur if the security of
      * the previous token had been compromised. This call is initiated by the

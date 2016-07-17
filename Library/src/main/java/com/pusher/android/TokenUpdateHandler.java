@@ -35,6 +35,8 @@ class TokenUpdateHandler extends AsyncHttpResponseHandler {
         Log.e(TAG, log);
 
         // the client ID cannot be found and we need to reregister to get a fresh one.
+        // If the 404 is for a different reason, it'll fall down at the next hurdle
+        // (uploading the token) anyway.
         if (statusCode == 404)
             this.internalRegistrationProgressListener.onNotFound();
     }

@@ -84,8 +84,11 @@ public class PusherPushNotificationRegistration {
 
         LocalBroadcastManager localBroadcastManager = LocalBroadcastManager.getInstance(applicationContext);
 
+        // Listen for successfully getting token from GCM
         localBroadcastManager.registerReceiver(mRegistrationBroadcastReceiver,
                 new IntentFilter(TOKEN_RECEIVED_INTENT_FILTER));
+
+        // Listen for failure to get token from GCM
         localBroadcastManager.registerReceiver(mRegistrationFailedBroadcastReceiver,
                 new IntentFilter(TOKEN_FAILED_INTENT_FILTER));
 
@@ -143,6 +146,11 @@ public class PusherPushNotificationRegistration {
         PusherGcmListenerService.setOnMessageReceivedListener(listener);
     }
 
+    /*
+    This checkes SharedPreferences to see if the library has cached the Pusher client id.
+    If so, it will try and update the token associated with that client id.
+    If not it will POST a new client.
+     */
     private void onReceiveRegistrationToken(
             final String token,
             final Context context,
@@ -182,6 +190,7 @@ public class PusherPushNotificationRegistration {
                     registrationListener.onFailedRegistration(statusCode, reason);
                 }
             }
+
 
             @Override
             public void onNotFound() {
