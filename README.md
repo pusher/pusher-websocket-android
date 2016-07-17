@@ -4,6 +4,8 @@ pusher-websocket-android is a wrapper library around [pusher-websocket-java](htt
 
 This README will only cover library-specific features. In order to get the core documentation, please visit the README of [pusher-websocket-java](https://github.com/pusher/pusher-websocket-java).
 
+**Please note that this library is still in beta and may not be ready in a production environment. As this library is still pre-1.0, expect breaking changes. Feel free to raise an issue about any bugs you find.**
+
 ## Installation
 
 You can install the library via Gradle:
@@ -115,6 +117,26 @@ if (checkPlayServices()) {
 
 Having called `register` this will start an `IntentService` under the hood that uploads the device token to Pusher.
 
+To get progress updates on your registration, you can optionally pass a `PusherPushNotificationRegistrationListener`:
+
+```java
+nativePusher.register(this, defaultSenderId, new PusherPushNotificationRegistrationListener() {
+    @Override
+    public void onSuccessfulRegistration() {
+        System.out.println("REGISTRATION SUCCESSFUL!!! YEEEEEHAWWWWW!");
+
+    }
+
+    @Override
+    public void onFailedRegistration(int statusCode, String response) {
+        System.out.println(
+                "A real sad day. Registration failed with code " + statusCode +
+                        " " + response
+        );
+    }
+});
+```
+
 ### Receiving Notifications
 
 Pusher has a concept of `interests` which clients can subscribe to. Whenever your server application sends a notification to an interest, subscribed clients will receive those notifications.
@@ -132,12 +154,32 @@ To unsubscribe to an interest:
 nativePusher.unsubscribe("kittens"); // we are no longer interested in kittens
 ```
 
+You can also keep track of the state of your subscriptions or un-subscriptions by passing an optional `PusherPushNotificationSubscriptionChangeListener`:
+
+
+```java
+nativePusher.subscribe("kittens", new PusherPushNotificationSubscriptionChangeListener() {
+    @Override
+    public void onSubscriptionChangeSucceeded() {
+        System.out.println("Success! I love kittens!");
+    }
+
+    @Override
+    public void onSubscriptionChangeFailed(int statusCode, String response) {
+        System.out.println(":(: received " + statusCode + " with" + response);
+    }
+});
+```
+
 ### Configuring the notifications client
 
 #### Setting the host of Pusher's notifications server
 
 ```java
-nativePusher.setHost("yolo.io");
+PusherAndroidOptions options = new PusherAndroidOptions();
+options.setHost("yolo.io");
+
+PusherAndroid pusher = new PusherAndroid("key", options);
 ```
 
 #### Using SSL
@@ -145,5 +187,7 @@ nativePusher.setHost("yolo.io");
 The client uses SSL by default. To unset it:
 
 ```java
-nativePusher.setEncrypted(false);
+PusherAndroidOptions options = new PusherAndroidOptions();
+options.setEncrypted(false);
+PusherAndroid pusher = new PusherAndroid("key", options);
 ```
