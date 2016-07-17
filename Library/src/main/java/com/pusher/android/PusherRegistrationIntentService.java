@@ -2,6 +2,7 @@ package com.pusher.android;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.github.rholder.retry.RetryException;
@@ -59,7 +60,9 @@ public class PusherRegistrationIntentService extends IntentService {
             return;
         }
 
-        PusherPushNotificationRegistration.getInstance().onReceiveRegistrationToken(token, this.getApplicationContext());
+        Intent receivedToken = new Intent(PusherPushNotificationRegistration.TOKEN_RECEIVED_INTENT_FILTER);
+        receivedToken.putExtra(PusherPushNotificationRegistration.TOKEN_EXTRA_KEY, token);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(receivedToken);
     }
 
 }

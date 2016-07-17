@@ -19,14 +19,22 @@ import com.pusher.client.connection.ConnectionState;
 public class PusherAndroid implements Client {
 
     private final Pusher pusher;
+    private final PusherPushNotificationRegistration pusherPushNotificationRegistration;
 
-    public PusherAndroid(final String apiKey) {
-        this(apiKey, new PusherOptions());
+    public PusherAndroid(final String appKey) {
+        this(appKey, new PusherAndroidOptions(), new PusherAndroidFactory());
     }
 
-    PusherAndroid(final String appKey, final PusherOptions pusherOptions) {
+    public PusherAndroid(final String appKey, final PusherAndroidOptions pusherOptions) {
+        this(appKey, pusherOptions, new PusherAndroidFactory());
+    }
+
+    PusherAndroid(final String appKey,
+                         final PusherAndroidOptions pusherOptions, final PusherAndroidFactory factory) {
         this.pusher = new Pusher(appKey, pusherOptions);
-        PusherPushNotificationRegistration.getInstance().setAppKey(appKey);
+        this.pusherPushNotificationRegistration =
+                new PusherPushNotificationRegistration(appKey, pusherOptions, factory);
+
     }
 
     @Override
@@ -100,7 +108,7 @@ public class PusherAndroid implements Client {
     }
 
     public PusherPushNotificationRegistration nativePusher() {
-        return PusherPushNotificationRegistration.getInstance();
+        return this.pusherPushNotificationRegistration;
     }
 
 }

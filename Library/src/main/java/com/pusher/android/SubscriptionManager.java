@@ -24,14 +24,23 @@ class SubscriptionManager {
     private final Context context;
     private final Outbox outbox;
     private final String appKey;
-    private final PusherPushNotificationRegistrationOptions options;
+    private final PusherAndroidOptions options;
+    private final PusherAndroidFactory factory;
 
-    SubscriptionManager(String clientId, Context context, Outbox outbox, String appKey, PusherPushNotificationRegistrationOptions options) {
+    SubscriptionManager(
+            String clientId,
+            Context context,
+            Outbox outbox,
+            String appKey,
+            PusherAndroidOptions options,
+            PusherAndroidFactory factory
+    ) {
         this.clientId = clientId;
         this.context = context;
         this.outbox = outbox;
         this.appKey = appKey;
         this.options = options;
+        this.factory = factory;
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
         preferences.edit().putString(PUSHER_PUSH_CLIENT_ID_KEY, clientId).apply();
         flushOutbox();
@@ -56,9 +65,7 @@ class SubscriptionManager {
                 }
             };
 
-            String url = options.buildURL("/clients/" + clientId + "/interests/") + item.getInterest();
-
-            Factory factory = Factory.getInstance();
+            String url = options.buildNotificationURL("/clients/" + clientId + "/interests/") + item.getInterest();
             ResponseHandlerInterface handler = factory.newSubscriptionChangeHandler(item, successCallback);
             AsyncHttpClient client = factory.newAsyncHttpClient();
             switch (item.getChange()) {

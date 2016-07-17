@@ -10,10 +10,10 @@ import android.view.MenuItem;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.pusher.android.PusherAndroid;
+import com.pusher.android.PusherAndroidOptions;
 import com.pusher.android.PusherPushNotificationReceivedListener;
 import com.pusher.android.PusherPushNotificationRegistration;
 import com.pusher.android.PusherPushNotificationRegistrationListener;
-import com.pusher.android.PusherPushNotificationRegistrationOptions;
 import com.pusher.android.PusherPushNotificationSubscriptionListener;
 import com.pusher.client.connection.ConnectionEventListener;
 import com.pusher.client.connection.ConnectionState;
@@ -28,7 +28,11 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        PusherAndroid pusher = new PusherAndroid("67288ffa2e8febc6b871");
+
+        PusherAndroidOptions options = new PusherAndroidOptions();
+        options.setNotificationHost("yolo.ngrok.io");
+
+        PusherAndroid pusher = new PusherAndroid("824e27be45b4218990c9", options);
         pusher.connect(new ConnectionEventListener() {
             @Override
             public void onConnectionStateChange(ConnectionStateChange change) {
@@ -55,9 +59,6 @@ public class MainActivity extends Activity {
                 }
             });
 
-            PusherPushNotificationRegistrationOptions options = new PusherPushNotificationRegistrationOptions();
-            options.setHost("yolo.ngrok.io");
-
             nativePusher.setRegistrationListener(new PusherPushNotificationRegistrationListener() {
                 @Override
                 public void onSuccessfulRegistration() {
@@ -73,7 +74,7 @@ public class MainActivity extends Activity {
                 }
             });
 
-            nativePusher.register(this, defaultSenderId, options);
+            nativePusher.register(this, defaultSenderId);
             nativePusher.subscribe("donuts", new PusherPushNotificationSubscriptionListener() {
                 @Override
                 public void onSubscriptionSucceeded() {

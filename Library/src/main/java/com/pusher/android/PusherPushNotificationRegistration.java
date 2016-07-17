@@ -1,10 +1,13 @@
 package com.pusher.android;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.loopj.android.http.AsyncHttpClient;
@@ -20,24 +23,24 @@ import cz.msebera.android.httpclient.entity.StringEntity;
  * Created by jamiepatel on 11/06/2016.
  */
 public class PusherPushNotificationRegistration {
-    private static PusherPushNotificationRegistration instance = null;
+    static String TOKEN_RECEIVED_INTENT_FILTER = "__pusher__token__received";
+    static String TOKEN_EXTRA_KEY = "token";
+
     private static final String PLATFORM_TYPE = "gcm";
     private static final String TAG = "PusherPushNotifReg";
 
-    private String appKey; // existence guaranteed by package protection + set in Pusher initializer.
-    private PusherPushNotificationRegistrationListener registrationListener;
-    private PusherPushNotificationReceivedListener messageReceivedListener;
+    private final String appKey;
     private final Outbox outbox = new Outbox();
-    private PusherPushNotificationRegistrationOptions options;
+    private final PusherAndroidOptions options;
+    private final PusherAndroidFactory factory;
+
+    private PusherPushNotificationRegistrationListener registrationListener;
     private SubscriptionManager clientManager;
 
-    /*
-    Package-protected static method to get the PusherPushNotificationRegistration. If the developer
-    desires access to this object, they will have to call #nativePusher() on a Pusher instance.
-     */
-    static synchronized PusherPushNotificationRegistration getInstance() {
-        if (instance == null) instance = new PusherPushNotificationRegistration();
-        return instance;
+    PusherPushNotificationRegistration(String appKey, PusherAndroidOptions options, PusherAndroidFactory factory) {
+        this.appKey = appKey;
+        this.options = options;
+        this.factory = factory;
     }
 
     /*
@@ -45,13 +48,20 @@ public class PusherPushNotificationRegistration {
     GCM
      */
     public void register(Context context, String defaultSenderId) {
-        register(context, defaultSenderId, new PusherPushNotificationRegistrationOptions());
-    }
-
-    public void register(Context context, String defaultSenderId, PusherPushNotificationRegistrationOptions options) {
         Log.d(TAG, "Registering for native notifications");
-        this.options = options;
         Context applicationContext = context.getApplicationContext();
+
+        BroadcastReceiver mRegistrationBroadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String token = intent.getStringExtra(TOKEN_EXTRA_KEY);
+                onReceiveRegistrationToken(token, context);
+            }
+        };
+
+        LocalBroadcastManager.getInstance(applicationContext).registerReceiver(mRegistrationBroadcastReceiver,
+                new IntentFilter(TOKEN_RECEIVED_INTENT_FILTER));
+
         Intent intent = new Intent(applicationContext, PusherRegistrationIntentService.class);
         intent.putExtra("gcm_defaultSenderId", defaultSenderId);
         Log.d(TAG, "Starting registration intent service");
@@ -83,22 +93,11 @@ public class PusherPushNotificationRegistration {
 
     // Sets the listener to execute when a notification is received
     public void setMessageReceivedListener(PusherPushNotificationReceivedListener listener) {
-        this.messageReceivedListener = listener;
+        PusherGcmListenerService.setOnMessageReceivedListener(listener);
     }
 
     public void setRegistrationListener(PusherPushNotificationRegistrationListener listener) {
         this.registrationListener = listener;
-    }
-
-    // Used by a Pusher constructor to set the API key of this instance.
-    void setAppKey(String appKey) {
-        this.appKey = appKey;
-    }
-
-    void onMessageReceived(String from, Bundle data) {
-        if (this.messageReceivedListener != null) {
-            this.messageReceivedListener.onMessageReceived(from, data);
-        }
     }
 
     void onReceiveRegistrationToken(String token, final Context context) {
@@ -118,7 +117,7 @@ public class PusherPushNotificationRegistration {
             public void onConfirmClientId(String id) {
                 PusherPushNotificationRegistration registration = PusherPushNotificationRegistration.this;
                 registration.clientManager =
-                        new SubscriptionManager(id, context, outbox, appKey, options);
+                        factory.newSubscriptionManager(id, context, outbox, appKey, options);
                 if (registration.registrationListener != null)
                     registration.registrationListener.onSuccessfulRegistration();
             }
@@ -131,17 +130,14 @@ public class PusherPushNotificationRegistration {
         }
     }
 
-    // Singleton
-    private PusherPushNotificationRegistration() {}
-
     /*
     Uploads registration token for the first time then stores it in SharedPreferences for use
     on subsequent requests
      */
     private void uploadRegistrationToken(Context context, String token, StringEntity params, ClientIdConfirmationListener onReceiveClientId) {
-        String url = options.buildURL("/clients");
-        AsyncHttpClient client = Factory.getInstance().newAsyncHttpClient();
-        JsonHttpResponseHandler handler = new TokenUploadHandler(onReceiveClientId, registrationListener);
+        String url = options.buildNotificationURL("/clients");
+        AsyncHttpClient client = factory.newAsyncHttpClient();
+        JsonHttpResponseHandler handler = factory.newTokenUploadHandler(onReceiveClientId, registrationListener);
         client.post(context, url, params, "application/json", handler);
     }
 
@@ -151,8 +147,8 @@ public class PusherPushNotificationRegistration {
     private void updateRegistrationToken(
             final Context context, final String token,
             final StringEntity params, final String cachedClientId, final ClientIdConfirmationListener onReceiveClientId) {
-        String url = options.buildURL("/clients/" + cachedClientId + "/token");
-        AsyncHttpClient client = new AsyncHttpClient();
+        String url = options.buildNotificationURL("/clients/" + cachedClientId + "/token");
+        AsyncHttpClient client = factory.newAsyncHttpClient();
 
         Runnable notFoundCallback = new Runnable() {
             @Override
@@ -162,9 +158,11 @@ public class PusherPushNotificationRegistration {
             }
         };
 
-        AsyncHttpResponseHandler handler = new TokenUpdateHandler(
+        AsyncHttpResponseHandler handler = factory.newTokenUpdateHandler(
                 notFoundCallback,
-                onReceiveClientId, cachedClientId);
+                onReceiveClientId,
+                cachedClientId
+        );
         client.put(context, url, params, "application/json", handler);
     }
 
