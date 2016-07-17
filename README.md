@@ -171,6 +171,17 @@ nativePusher.subscribe("kittens", new PusherPushNotificationSubscriptionChangeLi
 });
 ```
 
+If you wish to set a custom callback for when GCM notifications comes in:
+
+```java
+nativePusher.setMessageReceivedListener(new PusherPushNotificationReceivedListener() {
+    @Override
+    public void onMessageReceived(String from, Bundle data) {
+      // do something magical 🔮
+    }
+});
+```
+
 ### Configuring the notifications client
 
 #### Setting the host of Pusher's notifications server
