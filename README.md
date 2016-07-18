@@ -89,6 +89,9 @@ Pusher's GCM listeners and services above allow the library to handle incoming t
 You can start registering for push notifications in an `Activity` or any other valid `Context`. You will need to check Google Play Services availability on the device, with a function such as:
 
 ```java
+private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
+private static final String TAG="yourtag";
+
 private boolean checkPlayServices() {
     GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
     int resultCode = apiAvailability.isGooglePlayServicesAvailable(this);
