@@ -191,7 +191,7 @@ nativePusher.setMessageReceivedListener(new PusherPushNotificationReceivedListen
 
 ```java
 PusherAndroidOptions options = new PusherAndroidOptions();
-options.setHost("yolo.io");
+options.setNotificationHost("yolo.io");
 
 PusherAndroid pusher = new PusherAndroid("key", options);
 ```
@@ -202,6 +202,6 @@ The client uses SSL by default. To unset it:
 
 ```java
 PusherAndroidOptions options = new PusherAndroidOptions();
-options.setEncrypted(false);
+options.setNotificationEncrypted(false);
 PusherAndroid pusher = new PusherAndroid("key", options);
 ```
