@@ -18,13 +18,17 @@ import cz.msebera.android.httpclient.entity.StringEntity;
  */
 
 class SubscriptionManager {
-    static final String PUSHER_PUSH_CLIENT_ID_KEY = "__pusher__client__key__";
+    static final String PUSHER_PUSH_CLIENT_ID_PREFIX = "__pusher__client__key__";
     private static final String TAG = "PClientManager";
     private final String clientId;
     private final Context context;
     private final String appKey;
     private final PusherAndroidOptions options;
     private final PusherAndroidFactory factory;
+
+    static String sharedPreferencesKey(String appKey) {
+        return PUSHER_PUSH_CLIENT_ID_PREFIX + appKey;
+    }
 
     SubscriptionManager(
             String clientId,
@@ -39,7 +43,7 @@ class SubscriptionManager {
         this.options = options;
         this.factory = factory;
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        preferences.edit().putString(PUSHER_PUSH_CLIENT_ID_KEY, clientId).apply();
+        preferences.edit().putString(sharedPreferencesKey(appKey), clientId).apply();
     }
 
     void sendSubscriptionChange(String interest, InterestSubscriptionChange change, PusherPushNotificationSubscriptionChangeListener listener) {

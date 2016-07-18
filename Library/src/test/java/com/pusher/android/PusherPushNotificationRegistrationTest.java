@@ -208,7 +208,7 @@ public class PusherPushNotificationRegistrationTest {
 
     private InternalRegistrationProgressListener testUpdate() throws IOException {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        sharedPreferences.edit().putString(SubscriptionManager.PUSHER_PUSH_CLIENT_ID_KEY, "cached-id").apply();
+        sharedPreferences.edit().putString("__pusher__client__key__superkey", "cached-id").apply();
         beginRegistration();
         sendGcmTokenReceivedBroadcast();
 

@@ -164,7 +164,7 @@ public class PusherPushNotificationRegistration {
         }
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        String cachedId = preferences.getString(SubscriptionManager.PUSHER_PUSH_CLIENT_ID_KEY, null);
+        String cachedId = preferences.getString(SubscriptionManager.sharedPreferencesKey(appKey), null);
 
         final StringEntity finalParams = params;
         final InternalRegistrationProgressListener internalRegistrationProgressListener = new InternalRegistrationProgressListener() {

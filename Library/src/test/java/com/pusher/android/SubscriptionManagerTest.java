@@ -66,7 +66,7 @@ public class SubscriptionManagerTest {
     @Test
     public void testClientIDCachedOnConstruction(){
         String cachedId = PreferenceManager.getDefaultSharedPreferences(context).getString(
-                SubscriptionManager.PUSHER_PUSH_CLIENT_ID_KEY,
+                "__pusher__client__key__super-cool-key",
                 null
         );
         assertEquals("123-456", cachedId);
