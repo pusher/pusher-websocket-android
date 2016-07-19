@@ -8,25 +8,31 @@ This README will only cover library-specific features. In order to get the core 
 
 ## Installation
 
-You can install the library via Gradle:
+You can install the library via Gradle. First add an additional repository to your `$PROJECT_ROOT/build.gradle`:
 
 ```groovy
 repositories {
   maven { url 'http://clojars.org/repo' }
 }
+```
 
+Then add these dependencies to your `$PROJECT_ROOT/app/build.gradle`:
+
+```groovy
 dependencies {
+  compile 'com.google.android.gms:play-services-gcm:9.0.0'
   compile 'com.pusher:pusher-websocket-android:0.1.0'
 }
 ```
 
-## Native Notifications
+## Push Notifications
 
-This set up will assume:
+This feature requires some set up on your behalf. See [our guide to setting up push notifications for Android](https://pusher.com/docs/push_notifications/android) for a friendly introduction.
 
-* That you have an app on the Google Developers Console, that you have an API server key, and that you have a [valid configuration file](https://developers.google.com/cloud-messaging/android/client#get-config) for Google services in your `app/` directory.
-* Your target Android SDK is 23 or higher.
-* You have installed version 9.x.x of `"com.google.android.gms:play-services-gcm:9.0.0"`.
+* That you have an app (a.k.a. project) on the Google Developers Console
+* That you have a Server API Key which you have uploaded to the Pusher dashboard
+* That you have a [valid configuration file](https://developers.google.com/cloud-messaging/android/client#get-config) for Google services in your `app/` directory
+* Your target Android SDK is 23 or higher
 
 Add to your `AndroidManifest.xml` the following:
 
