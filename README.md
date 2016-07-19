@@ -31,55 +31,65 @@ This set up will assume:
 Add to your `AndroidManifest.xml` the following:
 
 ```xml
+<manifest>
+  <!-- ... -->
 
-<!-- <manifest> -->
-<!-- GCM permissions -->
-<uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
-<uses-permission android:name="android.permission.WAKE_LOCK" />
+  <!-- GCM permissions -->
+  <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+  <uses-permission android:name="android.permission.WAKE_LOCK" />
 
-<!-- <application> -->
-<!-- GCM Receiver  -->
-<receiver
-    android:name="com.google.android.gms.gcm.GcmReceiver"
-    android:exported="true"
-    android:permission="com.google.android.c2dm.permission.SEND" >
-    <intent-filter>
-        <action android:name="com.google.android.c2dm.intent.RECEIVE" />
-        <category android:name="gcm.play.android.samples.com.gcmquickstart" />
-    </intent-filter>
-</receiver>
+  <application>
+    <!-- ... -->
 
-<!-- Pusher's GCM listeners and services -->
-<receiver
-    android:name="com.google.android.gms.gcm.GcmReceiver"
-    android:exported="true"
-    android:permission="com.google.android.c2dm.permission.SEND" >
-    <intent-filter>
-        <action android:name="com.google.android.c2dm.intent.RECEIVE" />
-        <category android:name="gcm.play.android.samples.com.gcmquickstart" />
-    </intent-filter>
-</receiver>
+    <!-- <application> -->
+    <!-- GCM Receiver  -->
+    <receiver
+        android:name="com.google.android.gms.gcm.GcmReceiver"
+        android:exported="true"
+        android:permission="com.google.android.c2dm.permission.SEND" >
+        <intent-filter>
+            <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+            <category android:name="gcm.play.android.samples.com.gcmquickstart" />
+        </intent-filter>
+    </receiver>
 
-<service
-    android:name="com.pusher.android.PusherGcmListenerService"
-    android:exported="false" >
-    <intent-filter>
-        <action android:name="com.google.android.c2dm.intent.RECEIVE" />
-    </intent-filter>
-</service>
+    <!-- Pusher's GCM listeners and services -->
+    <receiver
+        android:name="com.google.android.gms.gcm.GcmReceiver"
+        android:exported="true"
+        android:permission="com.google.android.c2dm.permission.SEND" >
+        <intent-filter>
+            <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+            <category android:name="gcm.play.android.samples.com.gcmquickstart" />
+        </intent-filter>
+    </receiver>
 
-<service
-    android:name="com.pusher.android.PusherInstanceIDListenerService"
-    android:exported="false">
-    <intent-filter>
-        <action android:name="com.google.android.gms.iid.InstanceID"/>
-    </intent-filter>
-</service>
+    <service
+        android:name="com.pusher.android.PusherGcmListenerService"
+        android:exported="false" >
+        <intent-filter>
+            <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+        </intent-filter>
+    </service>
 
-<service
-    android:name="com.pusher.android.PusherRegistrationIntentService"
-    android:exported="false">
-</service>
+    <service
+        android:name="com.pusher.android.PusherInstanceIDListenerService"
+        android:exported="false">
+        <intent-filter>
+            <action android:name="com.google.android.gms.iid.InstanceID"/>
+        </intent-filter>
+    </service>
+
+    <service
+        android:name="com.pusher.android.PusherRegistrationIntentService"
+        android:exported="false">
+    </service>
+
+    <!-- ... -->
+  </application>
+
+  <!-- ... -->
+</manifest>
 ```
 
 Pusher's GCM listeners and services above allow the library to handle incoming tokens and keep state synced with our servers.
@@ -112,6 +122,8 @@ private boolean checkPlayServices() {
 To then register for notifications:
 
 ```java
+PusherAndroid pusher = new PusherAndroid(<android_api_key>);
+
 if (checkPlayServices()) {
   String defaultSenderId = getString(R.string.gcm_defaultSenderId);
   PusherPushNotificationRegistration nativePusher = pusher.nativePusher();
