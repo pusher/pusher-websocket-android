@@ -122,7 +122,7 @@ private boolean checkPlayServices() {
 To then register for notifications:
 
 ```java
-PusherAndroid pusher = new PusherAndroid(<android_api_key>);
+PusherAndroid pusher = new PusherAndroid(<pusher_api_key>);
 
 if (checkPlayServices()) {
   String defaultSenderId = getString(R.string.gcm_defaultSenderId);
