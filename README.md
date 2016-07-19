@@ -105,39 +105,57 @@ Pusher's GCM listeners and services above allow the library to handle incoming t
 You can start registering for push notifications in an `Activity` or any other valid `Context`. You will need to check Google Play Services availability on the device, with a function such as:
 
 ```java
-private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
-private static final String TAG="yourtag";
+public class MainActivity extends AppCompatActivity {
+    private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
+    private static final String TAG = "yourtag";
 
-private boolean checkPlayServices() {
-    GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
-    int resultCode = apiAvailability.isGooglePlayServicesAvailable(this);
-    if (resultCode != ConnectionResult.SUCCESS) {
-        if (apiAvailability.isUserResolvableError(resultCode)) {
-            apiAvailability.getErrorDialog(this, resultCode, PLAY_SERVICES_RESOLUTION_REQUEST)
-                    .show();
-        } else {
-            Log.i(TAG, "This device is not supported.");
-            finish();
-        }
-        return false;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+      if (playServicesAvailable()) {
+        // ... set up Pusher push notifications
+      } else {
+        // ... log error, or handle gracefully
+      }
     }
-    return true;
+
+    private boolean playServicesAvailable() {
+        GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
+        int resultCode = apiAvailability.isGooglePlayServicesAvailable(this);
+        if (resultCode != ConnectionResult.SUCCESS) {
+            if (apiAvailability.isUserResolvableError(resultCode)) {
+                apiAvailability.getErrorDialog(this, resultCode, PLAY_SERVICES_RESOLUTION_REQUEST)
+                        .show();
+            } else {
+                Log.i(TAG, "This device is not supported.");
+                finish();
+            }
+            return false;
+        }
+        return true;
+    }
+
+    // ...
 }
 ```
 
-To then register for notifications:
+Assuming that Google Play services are available, you can then register for push notifications. Expand your `onCreate` handler to instantiate a `PusherAndroid`, get the native push notification object from it, and register using the sender ID fetched from your `google-services.json` file:
 
 ```java
-PusherAndroid pusher = new PusherAndroid(<pusher_api_key>);
-
-if (checkPlayServices()) {
-  String defaultSenderId = getString(R.string.gcm_defaultSenderId);
-  PusherPushNotificationRegistration nativePusher = pusher.nativePusher();
-  nativePusher.register(this, defaultSenderId);
+public class MainActivity extends AppCompatActivity {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+      if (playServicesAvailable()) {
+        PusherAndroid pusher = new PusherAndroid(<pusher_api_key>);
+        PusherPushNotificationRegistration nativePusher = pusher.nativePusher();
+        String defaultSenderId = getString(R.string.gcm_defaultSenderId); // fetched from your google-services.json
+        nativePusher.register(this, defaultSenderId);
+      } else {
+        // ... log error, or handle gracefully
+      }
+    }
+    // ...
 }
 ```
-
-`this` refers to the `Context`. The `defaultSenderId` comes automatically from your configuration file.
 
 Having called `register` this will start an `IntentService` under the hood that uploads the device token to Pusher.
 
