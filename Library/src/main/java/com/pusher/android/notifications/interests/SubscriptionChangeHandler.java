@@ -1,4 +1,4 @@
-package com.pusher.android;
+package com.pusher.android.notifications.interests;
 
 import android.util.Log;
 
@@ -10,16 +10,16 @@ import cz.msebera.android.httpclient.Header;
  * Created by jamiepatel on 11/07/2016.
  */
 
-class SubscriptionChangeHandler extends AsyncHttpResponseHandler {
+public class SubscriptionChangeHandler extends AsyncHttpResponseHandler {
     private static final String TAG = "PSubHandler";
     private final String interest;
     private final InterestSubscriptionChange change;
-    private final PusherPushNotificationSubscriptionChangeListener listener;
+    private final InterestSubscriptionChangeListener listener;
 
-    SubscriptionChangeHandler(
+    public SubscriptionChangeHandler(
             String interest,
             InterestSubscriptionChange change,
-            PusherPushNotificationSubscriptionChangeListener listener) {
+            InterestSubscriptionChangeListener listener) {
         this.interest = interest;
         this.change = change;
         this.listener = listener;

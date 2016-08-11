@@ -1,4 +1,4 @@
-package com.pusher.android;
+package com.pusher.android.notifications.tokens;
 
 import android.util.Log;
 
@@ -13,11 +13,11 @@ import cz.msebera.android.httpclient.Header;
  * Created by jamiepatel on 15/07/2016.
  */
 
-class TokenUploadHandler extends JsonHttpResponseHandler {
+public class TokenUploadHandler extends JsonHttpResponseHandler {
     private static final String TAG = "PUploadSuccess";
     private final InternalRegistrationProgressListener callback;
 
-    TokenUploadHandler(InternalRegistrationProgressListener callback) {
+    public TokenUploadHandler(InternalRegistrationProgressListener callback) {
         this.callback = callback;
     }
 
@@ -34,6 +34,8 @@ class TokenUploadHandler extends JsonHttpResponseHandler {
 
     @Override
     public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+        Log.e("Disgrace", ""+statusCode);
+        Log.e("throw", throwable.getMessage());
         onFailure(statusCode, errorResponse.toString());
     }
 

@@ -1,4 +1,4 @@
-package com.pusher.android;
+package com.pusher.android.notifications;
 
 import android.content.Context;
 import android.content.Intent;
@@ -9,6 +9,18 @@ import android.support.v4.content.LocalBroadcastManager;
 
 
 import com.loopj.android.http.AsyncHttpClient;
+import com.pusher.android.BuildConfig;
+import com.pusher.android.PusherAndroidFactory;
+import com.pusher.android.PusherAndroidOptions;
+import com.pusher.android.notifications.gcm.GcmRegistrationIntentService;
+import com.pusher.android.notifications.interests.InterestSubscriptionChange;
+import com.pusher.android.notifications.interests.InterestSubscriptionChangeListener;
+import com.pusher.android.notifications.interests.SubscriptionManager;
+import com.pusher.android.notifications.tokens.InternalRegistrationProgressListener;
+import com.pusher.android.notifications.tokens.PushNotificationRegistrationListener;
+import com.pusher.android.notifications.tokens.TokenUpdateHandler;
+import com.pusher.android.notifications.tokens.TokenUploadHandler;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -49,17 +61,22 @@ import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(RobolectricGradleTestRunner.class)
 @Config(constants = BuildConfig.class)
-public class PusherPushNotificationRegistrationTest {
+public class PushNotificationRegistrationTest {
 
-    private PusherPushNotificationRegistration registration;
-    private @Mock PusherAndroidFactory factory;
-    private @Mock AsyncHttpClient client;
-    private @Mock TokenUploadHandler tokenUploadHandler;
-    private @Mock TokenUpdateHandler tokenUpdateHandler;
-    private @Mock PusherPushNotificationRegistrationListener registrationListener;
+    private PushNotificationRegistration registration;
     private @Mock
-    PusherPushNotificationSubscriptionChangeListener subscriptionListener;
-    private @Mock SubscriptionManager subscriptionManager;
+    PusherAndroidFactory factory;
+    private @Mock AsyncHttpClient client;
+    private @Mock
+    TokenUploadHandler tokenUploadHandler;
+    private @Mock
+    TokenUpdateHandler tokenUpdateHandler;
+    private @Mock
+    PushNotificationRegistrationListener registrationListener;
+    private @Mock
+    InterestSubscriptionChangeListener subscriptionListener;
+    private @Mock
+    SubscriptionManager subscriptionManager;
 
     private PusherAndroidOptions options = new PusherAndroidOptions();
     private Context context = RuntimeEnvironment.application.getApplicationContext();
@@ -77,9 +94,9 @@ public class PusherPushNotificationRegistrationTest {
                 any(String.class),
                 any(Context.class),
                 any(String.class),
-                any(PusherAndroidOptions.class)
-        )).thenReturn(subscriptionManager);
-        registration = new PusherPushNotificationRegistration("superkey", options, factory);
+                any(PusherAndroidOptions.class),
+                platformType)).thenReturn(subscriptionManager);
+        registration = new PushNotificationRegistration("superkey", options, factory);
         PreferenceManager.getDefaultSharedPreferences(context).edit().clear().apply();
     }
 
@@ -91,7 +108,7 @@ public class PusherPushNotificationRegistrationTest {
     @Test
     public void testGcmFailureTriggersRegistrationFailed() {
         beginRegistration();
-        Intent intent = new Intent(PusherPushNotificationRegistration.TOKEN_FAILED_INTENT_FILTER);
+        Intent intent = new Intent(PushNotificationRegistration.TOKEN_FAILED_INTENT_FILTER);
         LocalBroadcastManager.getInstance(context).sendBroadcastSync(intent);
         verify(registrationListener).onFailedRegistration(0, "Failed to get registration ID from GCM");
     }
@@ -148,8 +165,8 @@ public class PusherPushNotificationRegistrationTest {
 
     private void beginRegistration() {
         Context context = RuntimeEnvironment.application.getApplicationContext();
-        registration.register(context, "senderId", registrationListener);
-        Intent expectedIntent = new Intent(context, PusherRegistrationIntentService.class);
+        registration.registerGCM(context, "senderId", registrationListener);
+        Intent expectedIntent = new Intent(context, GcmRegistrationIntentService.class);
         Intent startedIntent = shadowOf(RuntimeEnvironment.application).getNextStartedService();
         assertThat(startedIntent.getComponent(), equalTo(expectedIntent.getComponent()));
         Bundle extras = startedIntent.getExtras();
@@ -160,8 +177,8 @@ public class PusherPushNotificationRegistrationTest {
     }
 
     private void sendGcmTokenReceivedBroadcast() {
-        Intent intent = new Intent(PusherPushNotificationRegistration.TOKEN_RECEIVED_INTENT_FILTER);
-        intent.putExtra(PusherPushNotificationRegistration.TOKEN_EXTRA_KEY, "mysuperspecialgcmtoken");
+        Intent intent = new Intent(PushNotificationRegistration.TOKEN_RECEIVED_INTENT_FILTER);
+        intent.putExtra(PushNotificationRegistration.TOKEN_EXTRA_KEY, "mysuperspecialgcmtoken");
         LocalBroadcastManager.getInstance(context).sendBroadcastSync(intent);
     }
 
@@ -199,8 +216,8 @@ public class PusherPushNotificationRegistrationTest {
                 eq("this-is-the-client-id"),
                 eq(context),
                 eq("superkey"),
-                eq(options)
-        );
+                eq(options),
+                platformType);
 
         // Test registration listener called
         verify(registrationListener).onSuccessfulRegistration();

@@ -1,4 +1,4 @@
-package com.pusher.android;
+package com.pusher.android.notifications.gcm;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -10,9 +10,9 @@ import com.google.android.gms.gcm.GcmListenerService;
  */
 public class PusherGcmListenerService extends GcmListenerService {
     private static final String TAG = "PGCMListenerService";
-    private static PusherPushNotificationReceivedListener listener;
+    private static GcmPushNotificationReceivedListener listener;
 
-    static void setOnMessageReceivedListener(PusherPushNotificationReceivedListener messageReceivedListener) {
+    public static void setOnMessageReceivedListener(GcmPushNotificationReceivedListener messageReceivedListener) {
         listener = messageReceivedListener;
     }
 

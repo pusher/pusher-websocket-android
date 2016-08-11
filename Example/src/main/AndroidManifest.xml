@@ -27,43 +27,60 @@
         </activity>
 
 
-        <!-- [START gcm_receiver] -->
-        <receiver
-            android:name="com.google.android.gms.gcm.GcmReceiver"
-            android:exported="true"
-            android:permission="com.google.android.c2dm.permission.SEND" >
-            <intent-filter>
-                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
-                <category android:name="gcm.play.android.samples.com.gcmquickstart" />
-            </intent-filter>
-        </receiver>
-        <!-- [END gcm_receiver] -->
+        <!--&lt;!&ndash; [START gcm_receiver] &ndash;&gt;-->
+        <!--<receiver-->
+            <!--android:name="com.google.android.gms.gcm.GcmReceiver"-->
+            <!--android:exported="true"-->
+            <!--android:permission="com.google.android.c2dm.permission.SEND" >-->
+            <!--<intent-filter>-->
+                <!--<action android:name="com.google.android.c2dm.intent.RECEIVE" />-->
+                <!--<category android:name="gcm.play.android.samples.com.gcmquickstart" />-->
+            <!--</intent-filter>-->
+        <!--</receiver>-->
+        <!--&lt;!&ndash; [END gcm_receiver] &ndash;&gt;-->
 
-        <!-- [START gcm_listener] -->
+        <!--&lt;!&ndash; [START gcm_listener] &ndash;&gt;-->
+        <!--<service-->
+            <!--android:name="com.pusher.android.notifications.gcm.PusherGcmListenerService"-->
+            <!--android:exported="false" >-->
+            <!--<intent-filter>-->
+                <!--<action android:name="com.google.android.c2dm.intent.RECEIVE" />-->
+            <!--</intent-filter>-->
+        <!--</service>-->
+        <!--&lt;!&ndash; [END gcm_listener] &ndash;&gt;-->
+        <!--&lt;!&ndash; [START instanceId_listener] &ndash;&gt;-->
+        <!--<service-->
+            <!--android:name="com.pusher.android.notifications.gcm.GcmInstanceIDListenerService"-->
+            <!--android:exported="false">-->
+            <!--<intent-filter>-->
+                <!--<action android:name="com.google.android.gms.iid.InstanceID"/>-->
+            <!--</intent-filter>-->
+        <!--</service>-->
+        <!--&lt;!&ndash; [END instanceId_listener] &ndash;&gt;-->
+
+        <!--<service-->
+            <!--android:name="com.pusher.android.notifications.gcm.GcmRegistrationIntentService"-->
+            <!--android:exported="false">-->
+        <!--</service>-->
+        <!--&lt;!&ndash; END ATTENTION &ndash;&gt;-->
+
+        <!-- FOR FCM -->
+        <!-- [START firebase_service] -->
         <service
-            android:name="com.pusher.android.PusherGcmListenerService"
-            android:exported="false" >
+            android:name="com.pusher.android.notifications.fcm.FcmMessagingService">
             <intent-filter>
-                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
             </intent-filter>
         </service>
-        <!-- [END gcm_listener] -->
-        <!-- [START instanceId_listener] -->
+        <!-- [END firebase_service] -->
+        <!-- [START firebase_iid_service] -->
         <service
-            android:name="com.pusher.android.PusherInstanceIDListenerService"
-            android:exported="false">
+            android:name="com.pusher.android.notifications.fcm.FcmInstanceIDService">
             <intent-filter>
-                <action android:name="com.google.android.gms.iid.InstanceID"/>
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
             </intent-filter>
         </service>
-        <!-- [END instanceId_listener] -->
-
-        <service
-            android:name="com.pusher.android.PusherRegistrationIntentService"
-            android:exported="false">
-        </service>
-        <!-- END ATTENTION -->
-
+        <!-- [END firebase_iid_service] -->
     </application>
 
 </manifest>

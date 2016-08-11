@@ -10,10 +10,10 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.pusher.android.PusherAndroid;
 import com.pusher.android.PusherAndroidOptions;
-import com.pusher.android.PusherPushNotificationReceivedListener;
-import com.pusher.android.PusherPushNotificationRegistration;
-import com.pusher.android.PusherPushNotificationRegistrationListener;
-import com.pusher.android.PusherPushNotificationSubscriptionChangeListener;
+import com.pusher.android.notifications.PushNotificationRegistration;
+import com.pusher.android.notifications.gcm.GcmPushNotificationReceivedListener;
+import com.pusher.android.notifications.tokens.PushNotificationRegistrationListener;
+import com.pusher.android.notifications.interests.InterestSubscriptionChangeListener;
 import com.pusher.client.connection.ConnectionEventListener;
 import com.pusher.client.connection.ConnectionState;
 import com.pusher.client.connection.ConnectionStateChange;
@@ -29,9 +29,8 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         PusherAndroidOptions options = new PusherAndroidOptions();
-        options.setNotificationHost("yolo.ngrok.io");
 
-        PusherAndroid pusher = new PusherAndroid("824e27be45b4218990c9", options);
+        PusherAndroid pusher = new PusherAndroid("key", options);
         pusher.connect(new ConnectionEventListener() {
             @Override
             public void onConnectionStateChange(ConnectionStateChange change) {
@@ -47,8 +46,8 @@ public class MainActivity extends Activity {
 
         if (checkPlayServices()) {
             String defaultSenderId = getString(R.string.gcm_defaultSenderId);
-            PusherPushNotificationRegistration nativePusher = pusher.nativePusher();
-            nativePusher.setMessageReceivedListener(new PusherPushNotificationReceivedListener() {
+            PushNotificationRegistration nativePusher = pusher.nativePusher();
+            nativePusher.setGcmListener(new GcmPushNotificationReceivedListener() {
                 @Override
                 public void onMessageReceived(String from, Bundle data) {
                     String message = data.getString("message");
@@ -58,7 +57,7 @@ public class MainActivity extends Activity {
                 }
             });
 
-            nativePusher.subscribe("donuts", new PusherPushNotificationSubscriptionChangeListener() {
+            nativePusher.subscribe("donuts", new InterestSubscriptionChangeListener() {
                 @Override
                 public void onSubscriptionChangeSucceeded() {
                     System.out.println("DONUT SUCCEEDED W000HOOO!!!");
@@ -71,7 +70,7 @@ public class MainActivity extends Activity {
             });
 
 
-            nativePusher.register(this, defaultSenderId, new PusherPushNotificationRegistrationListener() {
+            PushNotificationRegistrationListener regListener = new PushNotificationRegistrationListener() {
                 @Override
                 public void onSuccessfulRegistration() {
                     System.out.println("REGISTRATION SUCCESSFUL!!! YEEEEEHAWWWWW!");
@@ -85,7 +84,10 @@ public class MainActivity extends Activity {
                                     " " + response
                     );
                 }
-            });
+            };
+
+//            nativePusher.registerGCM(this, defaultSenderId, );
+            nativePusher.registerFCM(getApplicationContext(), regListener);
         }
     }
 
