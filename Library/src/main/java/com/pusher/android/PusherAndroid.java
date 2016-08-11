@@ -1,8 +1,9 @@
 package com.pusher.android;
 
+import com.google.firebase.iid.FirebaseInstanceIdService;
+import com.pusher.android.notifications.PushNotificationRegistration;
 import com.pusher.client.Client;
 import com.pusher.client.Pusher;
-import com.pusher.client.PusherOptions;
 import com.pusher.client.channel.Channel;
 import com.pusher.client.channel.ChannelEventListener;
 import com.pusher.client.channel.PresenceChannel;
@@ -19,7 +20,7 @@ import com.pusher.client.connection.ConnectionState;
 public class PusherAndroid implements Client {
 
     private final Pusher pusher;
-    private final PusherPushNotificationRegistration pusherPushNotificationRegistration;
+    private final PushNotificationRegistration pushNotificationRegistration;
 
     public PusherAndroid(final String appKey) {
         this(appKey, new PusherAndroidOptions(), new PusherAndroidFactory());
@@ -32,8 +33,8 @@ public class PusherAndroid implements Client {
     private PusherAndroid(final String appKey,
                           final PusherAndroidOptions pusherOptions, final PusherAndroidFactory factory) {
         this.pusher = new Pusher(appKey, pusherOptions);
-        this.pusherPushNotificationRegistration =
-                new PusherPushNotificationRegistration(appKey, pusherOptions, factory);
+        this.pushNotificationRegistration =
+                new PushNotificationRegistration(appKey, pusherOptions, factory);
 
     }
 
@@ -107,8 +108,8 @@ public class PusherAndroid implements Client {
         return this.pusher.getPresenceChannel(channelName);
     }
 
-    public PusherPushNotificationRegistration nativePusher() {
-        return this.pusherPushNotificationRegistration;
+    public PushNotificationRegistration nativePusher() {
+        return this.pushNotificationRegistration;
     }
 
 }

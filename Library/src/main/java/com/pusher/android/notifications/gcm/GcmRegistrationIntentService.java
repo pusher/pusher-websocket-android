@@ -1,4 +1,4 @@
-package com.pusher.android;
+package com.pusher.android.notifications.gcm;
 
 import android.app.IntentService;
 import android.content.Intent;
@@ -11,6 +11,7 @@ import com.github.rholder.retry.RetryerBuilder;
 import com.github.rholder.retry.StopStrategies;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.android.gms.iid.InstanceID;
+import com.pusher.android.notifications.PushNotificationRegistration;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -18,12 +19,12 @@ import java.util.concurrent.ExecutionException;
 /**
  * Created by jamiepatel on 10/06/2016.
  */
-public class PusherRegistrationIntentService extends IntentService {
+public class GcmRegistrationIntentService extends IntentService {
     private static final String TAG = "PusherRegIntentService";
     private static final Integer INSTANCE_ID_RETRY_ATTEMPTS = 10;
 
 
-    public PusherRegistrationIntentService() {
+    public GcmRegistrationIntentService() {
         super(TAG);
     }
 
@@ -57,13 +58,13 @@ public class PusherRegistrationIntentService extends IntentService {
                             INSTANCE_ID_RETRY_ATTEMPTS +
                             " :" +
                     e.getMessage());
-            Intent failedToGetToken = new Intent(PusherPushNotificationRegistration.TOKEN_FAILED_INTENT_FILTER);
+            Intent failedToGetToken = new Intent(PushNotificationRegistration.TOKEN_FAILED_INTENT_FILTER);
             LocalBroadcastManager.getInstance(this).sendBroadcast(failedToGetToken);
             return;
         }
 
-        Intent receivedToken = new Intent(PusherPushNotificationRegistration.TOKEN_RECEIVED_INTENT_FILTER);
-        receivedToken.putExtra(PusherPushNotificationRegistration.TOKEN_EXTRA_KEY, token);
+        Intent receivedToken = new Intent(PushNotificationRegistration.TOKEN_RECEIVED_INTENT_FILTER);
+        receivedToken.putExtra(PushNotificationRegistration.TOKEN_EXTRA_KEY, token);
         LocalBroadcastManager.getInstance(this).sendBroadcast(receivedToken);
     }
 

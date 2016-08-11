@@ -15,7 +15,7 @@ public class PusherAndroidOptions extends PusherOptions {
     private String notificationHost = "nativepushclient-cluster1.pusher.com";
     private boolean notificationEncrypted = true;
 
-    String buildNotificationURL(String path) {
+    public String buildNotificationURL(String path) {
         String scheme = notificationEncrypted ? "https://" : "http://";
         return scheme + notificationHost + "/" + NOTIFICATION_API_PREFIX + "/" + NOTIFICATION_API_VERSION + path;
     }

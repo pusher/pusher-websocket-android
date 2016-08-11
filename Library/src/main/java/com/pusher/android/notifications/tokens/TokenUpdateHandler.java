@@ -1,6 +1,5 @@
-package com.pusher.android;
+package com.pusher.android.notifications.tokens;
 
-import android.os.Looper;
 import android.util.Log;
 
 import com.loopj.android.http.AsyncHttpResponseHandler;
@@ -11,13 +10,12 @@ import cz.msebera.android.httpclient.Header;
  * Created by jamiepatel on 15/07/2016.
  */
 
-class TokenUpdateHandler extends AsyncHttpResponseHandler {
+public class TokenUpdateHandler extends AsyncHttpResponseHandler {
     private static final String TAG = "PTkUpdate";
     private final InternalRegistrationProgressListener internalRegistrationProgressListener;
     private final String cachedId;
 
-    TokenUpdateHandler(InternalRegistrationProgressListener internalListener, String cachedId) {
-        super(Looper.getMainLooper());
+    public TokenUpdateHandler(InternalRegistrationProgressListener internalListener, String cachedId) {
         this.internalRegistrationProgressListener = internalListener;
         this.cachedId = cachedId;
     }

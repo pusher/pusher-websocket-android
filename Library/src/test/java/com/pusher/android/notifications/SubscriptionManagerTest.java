@@ -1,9 +1,16 @@
-package com.pusher.android;
+package com.pusher.android.notifications;
 
 import android.content.Context;
 import android.preference.PreferenceManager;
 
 import com.loopj.android.http.AsyncHttpClient;
+import com.pusher.android.BuildConfig;
+import com.pusher.android.PusherAndroidFactory;
+import com.pusher.android.PusherAndroidOptions;
+import com.pusher.android.notifications.interests.InterestSubscriptionChange;
+import com.pusher.android.notifications.interests.InterestSubscriptionChangeListener;
+import com.pusher.android.notifications.interests.SubscriptionChangeHandler;
+import com.pusher.android.notifications.interests.SubscriptionManager;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -34,11 +41,13 @@ import static org.mockito.Mockito.when;
 @Config(constants = BuildConfig.class)
 public class SubscriptionManagerTest {
 
-    private @Mock PusherAndroidFactory factory;
     private @Mock
-    PusherPushNotificationSubscriptionChangeListener listener;
+    PusherAndroidFactory factory;
+    private @Mock
+    InterestSubscriptionChangeListener listener;
     private @Mock AsyncHttpClient client;
-    private @Mock SubscriptionChangeHandler subscriptionChangeHandler;
+    private @Mock
+    SubscriptionChangeHandler subscriptionChangeHandler;
     private Context context = RuntimeEnvironment.application.getApplicationContext();
     private PusherAndroidOptions options = new PusherAndroidOptions();
     private SubscriptionManager subscriptionManager;
@@ -52,7 +61,7 @@ public class SubscriptionManagerTest {
         when(factory.newSubscriptionChangeHandler(
                 any(String.class),
                 any(InterestSubscriptionChange.class),
-                any(PusherPushNotificationSubscriptionChangeListener.class)
+                any(InterestSubscriptionChangeListener.class)
         )).thenReturn(subscriptionChangeHandler);
 
         String clientId = "123-456";

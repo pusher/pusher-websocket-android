@@ -1,4 +1,4 @@
-package com.pusher.android;
+package com.pusher.android.notifications.interests;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -7,6 +7,9 @@ import android.util.Log;
 
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.ResponseHandlerInterface;
+import com.pusher.android.PusherAndroidFactory;
+import com.pusher.android.PusherAndroidOptions;
+import com.pusher.android.notifications.PlatformType;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -17,7 +20,7 @@ import cz.msebera.android.httpclient.entity.StringEntity;
  * Created by jamiepatel on 15/07/2016.
  */
 
-class SubscriptionManager {
+public class SubscriptionManager {
     static final String PUSHER_PUSH_CLIENT_ID_PREFIX = "__pusher__client__key__";
     private static final String TAG = "PClientManager";
     private final String clientId;
@@ -26,15 +29,16 @@ class SubscriptionManager {
     private final PusherAndroidOptions options;
     private final PusherAndroidFactory factory;
 
-    static String sharedPreferencesKey(String appKey) {
-        return PUSHER_PUSH_CLIENT_ID_PREFIX + appKey;
+    public static String sharedPreferencesKey(String appKey, PlatformType platformType) {
+        return PUSHER_PUSH_CLIENT_ID_PREFIX + platformType.toString() + "__" + appKey;
     }
 
-    SubscriptionManager(
+    public SubscriptionManager(
             String clientId,
             Context context,
             String appKey,
             PusherAndroidOptions options,
+            PlatformType platformType,
             PusherAndroidFactory factory
     ) {
         this.clientId = clientId;
@@ -43,10 +47,10 @@ class SubscriptionManager {
         this.options = options;
         this.factory = factory;
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        preferences.edit().putString(sharedPreferencesKey(appKey), clientId).apply();
+        preferences.edit().putString(sharedPreferencesKey(appKey, platformType), clientId).apply();
     }
 
-    void sendSubscriptionChange(String interest, InterestSubscriptionChange change, PusherPushNotificationSubscriptionChangeListener listener) {
+    public void sendSubscriptionChange(String interest, InterestSubscriptionChange change, InterestSubscriptionChangeListener listener) {
         JSONObject json = new JSONObject();
         try {
             json.put("app_key", appKey);
@@ -60,7 +64,7 @@ class SubscriptionManager {
                 interest,
                 change,
                 listener);
-        AsyncHttpClient client = factory.newAsyncHttpClient();
+        AsyncHttpClient client = factory.newHttpClient();
         switch (change) {
             case SUBSCRIBE:
                 client.post(context, url, entity, "application/json", handler);
