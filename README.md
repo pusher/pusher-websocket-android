@@ -83,7 +83,7 @@ Add to your `AndroidManifest.xml` the following:
     </receiver>
 
     <service
-        android:name="com.pusher.android.PusherGCMListenerService"
+        android:name="com.pusher.android.notifications.gcm.PusherGCMListenerService"
         android:exported="false" >
         <intent-filter>
             <action android:name="com.google.android.c2dm.intent.RECEIVE" />
@@ -91,7 +91,7 @@ Add to your `AndroidManifest.xml` the following:
     </service>
 
     <service
-        android:name="com.pusher.android.GCMInstanceIDListenerService"
+        android:name="com.pusher.android.notifications.gcm.GCMInstanceIDListenerService"
         android:exported="false">
         <intent-filter>
             <action android:name="com.google.android.gms.iid.InstanceID"/>
@@ -99,7 +99,7 @@ Add to your `AndroidManifest.xml` the following:
     </service>
 
     <service
-        android:name="com.pusher.android.PusherRegistrationIntentService"
+        android:name="com.pusher.android.notifications.gcm.GCMRegistrationIntentService"
         android:exported="false">
     </service>
 
@@ -124,8 +124,7 @@ To start with, you will need to [add Firebase to your project](https://firebase.
           <action android:name="com.google.firebase.MESSAGING_EVENT"/>
       </intent-filter>
   </service>
-  <!-- [END firebase_service] -->
-  <!-- [START firebase_iid_service] -->
+
   <service
       android:name="com.pusher.android.notifications.fcm.FCMInstanceIDService">
       <intent-filter>
