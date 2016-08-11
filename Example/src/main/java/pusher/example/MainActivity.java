@@ -8,10 +8,12 @@ import android.view.MenuItem;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.firebase.messaging.RemoteMessage;
 import com.pusher.android.PusherAndroid;
 import com.pusher.android.PusherAndroidOptions;
 import com.pusher.android.notifications.PushNotificationRegistration;
-import com.pusher.android.notifications.gcm.GcmPushNotificationReceivedListener;
+import com.pusher.android.notifications.fcm.FCMPushNotificationReceivedListener;
+import com.pusher.android.notifications.gcm.GCMPushNotificationReceivedListener;
 import com.pusher.android.notifications.tokens.PushNotificationRegistrationListener;
 import com.pusher.android.notifications.interests.InterestSubscriptionChangeListener;
 import com.pusher.client.connection.ConnectionEventListener;
@@ -47,7 +49,7 @@ public class MainActivity extends Activity {
         if (checkPlayServices()) {
             String defaultSenderId = getString(R.string.gcm_defaultSenderId);
             PushNotificationRegistration nativePusher = pusher.nativePusher();
-            nativePusher.setGcmListener(new GcmPushNotificationReceivedListener() {
+            nativePusher.setGCMListener(new GCMPushNotificationReceivedListener() {
                 @Override
                 public void onMessageReceived(String from, Bundle data) {
                     String message = data.getString("message");
@@ -85,6 +87,13 @@ public class MainActivity extends Activity {
                     );
                 }
             };
+
+            nativePusher.setFCMListener(new FCMPushNotificationReceivedListener() {
+                @Override
+                public void onMessageReceived(RemoteMessage remoteMessage) {
+
+                }
+            });
 
 //            nativePusher.registerGCM(this, defaultSenderId, );
             nativePusher.registerFCM(getApplicationContext(), regListener);

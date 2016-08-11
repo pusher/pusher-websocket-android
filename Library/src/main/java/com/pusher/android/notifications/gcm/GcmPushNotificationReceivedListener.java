@@ -7,6 +7,6 @@ import android.os.Bundle;
  */
 
 
-public interface GcmPushNotificationReceivedListener {
+public interface GCMPushNotificationReceivedListener {
     void onMessageReceived(String from, Bundle data);
 }

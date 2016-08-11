@@ -6,6 +6,6 @@ import com.google.firebase.messaging.RemoteMessage;
  * Created by jamiepatel on 10/08/2016.
  */
 
-public interface FcmPushNotificationReceivedListener {
+public interface FCMPushNotificationReceivedListener {
     void onMessageReceived(RemoteMessage remoteMessage);
 }

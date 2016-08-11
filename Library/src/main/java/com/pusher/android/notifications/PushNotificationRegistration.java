@@ -15,12 +15,12 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.pusher.android.PusherAndroidFactory;
 import com.pusher.android.PusherAndroidOptions;
-import com.pusher.android.notifications.fcm.FcmInstanceIDService;
-import com.pusher.android.notifications.fcm.FcmMessagingService;
-import com.pusher.android.notifications.fcm.FcmPushNotificationReceivedListener;
-import com.pusher.android.notifications.gcm.GcmPushNotificationReceivedListener;
-import com.pusher.android.notifications.gcm.PusherGcmListenerService;
-import com.pusher.android.notifications.gcm.GcmRegistrationIntentService;
+import com.pusher.android.notifications.fcm.FCMInstanceIDService;
+import com.pusher.android.notifications.fcm.FCMMessagingService;
+import com.pusher.android.notifications.fcm.FCMPushNotificationReceivedListener;
+import com.pusher.android.notifications.gcm.GCMPushNotificationReceivedListener;
+import com.pusher.android.notifications.gcm.PusherGCMListenerService;
+import com.pusher.android.notifications.gcm.GCMRegistrationIntentService;
 import com.pusher.android.notifications.interests.InterestSubscriptionChange;
 import com.pusher.android.notifications.interests.InterestSubscriptionChangeListener;
 import com.pusher.android.notifications.interests.SubscriptionManager;
@@ -105,18 +105,22 @@ public class PushNotificationRegistration {
         localBroadcastManager.registerReceiver(mRegistrationFailedBroadcastReceiver,
                 new IntentFilter(TOKEN_FAILED_INTENT_FILTER));
 
-        Intent intent = new Intent(applicationContext, GcmRegistrationIntentService.class);
+        Intent intent = new Intent(applicationContext, GCMRegistrationIntentService.class);
         intent.putExtra("gcm_defaultSenderId", defaultSenderId);
         Log.d(TAG, "Starting registration intent service");
         applicationContext.startService(intent);
     }
 
     public void registerFCM(Context context, final PushNotificationRegistrationListener listener) {
-        FcmInstanceIDService.setPushRegistration(this);
+        FCMInstanceIDService.setPushRegistration(this);
         String token = FirebaseInstanceId.getInstance().getToken();
         if (token != null) {
             onReceiveRegistrationToken(PlatformType.FCM, token, context, listener);
         }
+    }
+
+    public void registerFCM(Context context) {
+        registerFCM(context, null);
     }
 
     // Subscribes to an interest
@@ -163,12 +167,12 @@ public class PushNotificationRegistration {
     }
 
     // Sets the listener to execute when a notification is received
-    public void setGcmListener(GcmPushNotificationReceivedListener listener) {
-        PusherGcmListenerService.setOnMessageReceivedListener(listener);
+    public void setGCMListener(GCMPushNotificationReceivedListener listener) {
+        PusherGCMListenerService.setOnMessageReceivedListener(listener);
     }
 
-    public void setFcmListener(FcmPushNotificationReceivedListener listener) {
-        FcmMessagingService.setOnMessageReceivedListener(listener);
+    public void setFCMListener(FCMPushNotificationReceivedListener listener) {
+        FCMMessagingService.setOnMessageReceivedListener(listener);
     }
 
 

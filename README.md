@@ -20,12 +20,24 @@ Then add these dependencies to your `$PROJECT_ROOT/app/build.gradle`:
 
 ```groovy
 dependencies {
+  // for GCM
   compile 'com.google.android.gms:play-services-gcm:9.0.0'
+
+  // for FCM
+  compile 'com.google.firebase:firebase-messaging:9.4.0'
+  compile 'com.google.firebase:firebase-core:9.4.0'
+
+
   compile 'com.pusher:pusher-websocket-android:0.1.0'
 }
+
+// for GCM and FCM
+apply plugin: 'com.google.gms.google-services'
 ```
 
 ## Push Notifications
+
+### GCM
 
 This feature requires some set up on your behalf. See [our guide to setting up push notifications for Android](https://pusher.com/docs/push_notifications/android) for a friendly introduction.
 
@@ -71,7 +83,7 @@ Add to your `AndroidManifest.xml` the following:
     </receiver>
 
     <service
-        android:name="com.pusher.android.PusherGcmListenerService"
+        android:name="com.pusher.android.PusherGCMListenerService"
         android:exported="false" >
         <intent-filter>
             <action android:name="com.google.android.c2dm.intent.RECEIVE" />
@@ -79,7 +91,7 @@ Add to your `AndroidManifest.xml` the following:
     </service>
 
     <service
-        android:name="com.pusher.android.PusherInstanceIDListenerService"
+        android:name="com.pusher.android.GCMInstanceIDListenerService"
         android:exported="false">
         <intent-filter>
             <action android:name="com.google.android.gms.iid.InstanceID"/>
@@ -99,6 +111,29 @@ Add to your `AndroidManifest.xml` the following:
 ```
 
 Pusher's GCM listeners and services above allow the library to handle incoming tokens and keep state synced with our servers.
+
+### FCM
+
+To start with, you will need to [add Firebase to your project](https://firebase.google.com/docs/android/setup). Then, in your application manifest, you need to register these services:
+
+```xml
+<application>
+  <service
+      android:name="com.pusher.android.notifications.fcm.FCMMessagingService">
+      <intent-filter>
+          <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+      </intent-filter>
+  </service>
+  <!-- [END firebase_service] -->
+  <!-- [START firebase_iid_service] -->
+  <service
+      android:name="com.pusher.android.notifications.fcm.FCMInstanceIDService">
+      <intent-filter>
+          <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
+      </intent-filter>
+  </service>
+</application>
+```
 
 ### Registering Your Device With Pusher
 
@@ -138,7 +173,12 @@ public class MainActivity extends AppCompatActivity {
 }
 ```
 
-Assuming that Google Play services are available, you can then register for push notifications. Expand your `onCreate` handler to instantiate a `PusherAndroid`, get the native push notification object from it, and register using the sender ID fetched from your `google-services.json` file:
+
+Assuming that Google Play services are available, you can then register for push notifications.
+
+#### GCM
+
+Expand your `onCreate` handler to instantiate a `PusherAndroid`, get the native push notification object from it, and register using the sender ID fetched from your `google-services.json` file:
 
 ```java
 public class MainActivity extends AppCompatActivity {
@@ -146,9 +186,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
       if (playServicesAvailable()) {
         PusherAndroid pusher = new PusherAndroid(<pusher_api_key>);
-        PusherPushNotificationRegistration nativePusher = pusher.nativePusher();
+        PushNotificationRegistration nativePusher = pusher.nativePusher();
         String defaultSenderId = getString(R.string.gcm_defaultSenderId); // fetched from your google-services.json
-        nativePusher.register(this, defaultSenderId);
+        nativePusher.registerGCM(this, defaultSenderId);
       } else {
         // ... log error, or handle gracefully
       }
@@ -159,10 +199,20 @@ public class MainActivity extends AppCompatActivity {
 
 Having called `register` this will start an `IntentService` under the hood that uploads the device token to Pusher.
 
-To get progress updates on your registration, you can optionally pass a `PusherPushNotificationRegistrationListener`:
+#### FCM
+
+For Firebase Cloud Messaging, instead of `registerGCM` we call `registerFCM`, passing in the context:
 
 ```java
-nativePusher.register(this, defaultSenderId, new PusherPushNotificationRegistrationListener() {
+nativePusher.registerFCM(this);
+```
+
+#### Listening For Registration Progress
+
+To get progress updates on your registration to GCM or FCM, you can optionally pass a `PushNotificationRegistrationListener`:
+
+```java
+PushNotificationRegistrationListener listener = new PushNotificationRegistrationListener() {
     @Override
     public void onSuccessfulRegistration() {
         System.out.println("REGISTRATION SUCCESSFUL!!! YEEEEEHAWWWWW!");
@@ -176,7 +226,13 @@ nativePusher.register(this, defaultSenderId, new PusherPushNotificationRegistrat
                         " " + response
         );
     }
-});
+}
+
+// GCM
+nativePusher.registerGCM(this, defaultSenderId, listener);
+
+// FCM
+nativePusher.registerFCM(this, listener);
 ```
 
 ### Receiving Notifications
@@ -186,7 +242,7 @@ Pusher has a concept of `interests` which clients can subscribe to. Whenever you
 Subscribing to an interest is simply a matter of calling:
 
 ```java
-PusherPushNotificationRegistration nativePusher = pusher.nativePusher();
+PushNotificationRegistration nativePusher = pusher.nativePusher();
 nativePusher.subscribe("kittens"); // the client is interested in kittens
 ```
 
@@ -196,11 +252,11 @@ To unsubscribe to an interest:
 nativePusher.unsubscribe("kittens"); // we are no longer interested in kittens
 ```
 
-You can also keep track of the state of your subscriptions or un-subscriptions by passing an optional `PusherPushNotificationSubscriptionChangeListener`:
+You can also keep track of the state of your subscriptions or un-subscriptions by passing an optional `InterestSubscriptionChangeListener`:
 
 
 ```java
-nativePusher.subscribe("kittens", new PusherPushNotificationSubscriptionChangeListener() {
+nativePusher.subscribe("kittens", new InterestSubscriptionChangeListener() {
     @Override
     public void onSubscriptionChangeSucceeded() {
         System.out.println("Success! I love kittens!");
@@ -216,9 +272,20 @@ nativePusher.subscribe("kittens", new PusherPushNotificationSubscriptionChangeLi
 If you wish to set a custom callback for when GCM notifications come in:
 
 ```java
-nativePusher.setMessageReceivedListener(new PusherPushNotificationReceivedListener() {
+nativePusher.setGCMListener(new GCMPushNotificationReceivedListener() {
     @Override
     public void onMessageReceived(String from, Bundle data) {
+      // do something magical 🔮
+    }
+});
+```
+
+For FCM:
+
+```java
+nativePusher.setFCMListener(new FCMPushNotificationReceivedListener() {
+    @Override
+    public void onMessageReceived(RemoteMessage remoteMessage) {
       // do something magical 🔮
     }
 });

@@ -11,7 +11,7 @@ import com.pusher.android.notifications.PushNotificationRegistration;
  * Created by jamiepatel on 03/08/2016.
  */
 
-public class FcmInstanceIDService extends FirebaseInstanceIdService {
+public class FCMInstanceIDService extends FirebaseInstanceIdService {
 
     private static final String TAG = "FCMIID";
     private static PushNotificationRegistration registration;

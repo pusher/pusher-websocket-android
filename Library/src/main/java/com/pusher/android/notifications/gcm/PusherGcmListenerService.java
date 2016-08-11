@@ -8,11 +8,11 @@ import com.google.android.gms.gcm.GcmListenerService;
 /**
  * Created by jamiepatel on 10/06/2016.
  */
-public class PusherGcmListenerService extends GcmListenerService {
+public class PusherGCMListenerService extends GcmListenerService {
     private static final String TAG = "PGCMListenerService";
-    private static GcmPushNotificationReceivedListener listener;
+    private static GCMPushNotificationReceivedListener listener;
 
-    public static void setOnMessageReceivedListener(GcmPushNotificationReceivedListener messageReceivedListener) {
+    public static void setOnMessageReceivedListener(GCMPushNotificationReceivedListener messageReceivedListener) {
         listener = messageReceivedListener;
     }
 

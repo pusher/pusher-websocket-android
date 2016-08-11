@@ -19,12 +19,12 @@ import java.util.concurrent.ExecutionException;
 /**
  * Created by jamiepatel on 10/06/2016.
  */
-public class GcmRegistrationIntentService extends IntentService {
+public class GCMRegistrationIntentService extends IntentService {
     private static final String TAG = "PusherRegIntentService";
     private static final Integer INSTANCE_ID_RETRY_ATTEMPTS = 10;
 
 
-    public GcmRegistrationIntentService() {
+    public GCMRegistrationIntentService() {
         super(TAG);
     }
 

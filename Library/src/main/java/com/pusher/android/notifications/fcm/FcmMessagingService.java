@@ -8,11 +8,11 @@ import android.util.Log;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
-public class FcmMessagingService extends FirebaseMessagingService {
+public class FCMMessagingService extends FirebaseMessagingService {
     private static final String TAG = "PFCMListenerService";
-    private static FcmPushNotificationReceivedListener listener;
+    private static FCMPushNotificationReceivedListener listener;
 
-    public static void setOnMessageReceivedListener(FcmPushNotificationReceivedListener messageReceivedListener) {
+    public static void setOnMessageReceivedListener(FCMPushNotificationReceivedListener messageReceivedListener) {
         listener = messageReceivedListener;
     }
 

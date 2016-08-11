@@ -12,7 +12,7 @@ import com.loopj.android.http.AsyncHttpClient;
 import com.pusher.android.BuildConfig;
 import com.pusher.android.PusherAndroidFactory;
 import com.pusher.android.PusherAndroidOptions;
-import com.pusher.android.notifications.gcm.GcmRegistrationIntentService;
+import com.pusher.android.notifications.gcm.GCMRegistrationIntentService;
 import com.pusher.android.notifications.interests.InterestSubscriptionChange;
 import com.pusher.android.notifications.interests.InterestSubscriptionChangeListener;
 import com.pusher.android.notifications.interests.SubscriptionManager;
@@ -166,7 +166,7 @@ public class PushNotificationRegistrationTest {
     private void beginRegistration() {
         Context context = RuntimeEnvironment.application.getApplicationContext();
         registration.registerGCM(context, "senderId", registrationListener);
-        Intent expectedIntent = new Intent(context, GcmRegistrationIntentService.class);
+        Intent expectedIntent = new Intent(context, GCMRegistrationIntentService.class);
         Intent startedIntent = shadowOf(RuntimeEnvironment.application).getNextStartedService();
         assertThat(startedIntent.getComponent(), equalTo(expectedIntent.getComponent()));
         Bundle extras = startedIntent.getExtras();
