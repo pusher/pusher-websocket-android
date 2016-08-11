@@ -34,8 +34,6 @@ public class TokenUploadHandler extends JsonHttpResponseHandler {
 
     @Override
     public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-        Log.e("Disgrace", ""+statusCode);
-        Log.e("throw", throwable.getMessage());
         onFailure(statusCode, errorResponse.toString());
     }
 
