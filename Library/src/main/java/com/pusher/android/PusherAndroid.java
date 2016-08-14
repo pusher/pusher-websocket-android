@@ -1,6 +1,7 @@
 package com.pusher.android;
 
 import com.google.firebase.iid.FirebaseInstanceIdService;
+import com.pusher.android.notifications.ManifestValidator;
 import com.pusher.android.notifications.PushNotificationRegistration;
 import com.pusher.client.Client;
 import com.pusher.client.Pusher;
@@ -34,7 +35,7 @@ public class PusherAndroid implements Client {
                           final PusherAndroidOptions pusherOptions, final PusherAndroidFactory factory) {
         this.pusher = new Pusher(appKey, pusherOptions);
         this.pushNotificationRegistration =
-                new PushNotificationRegistration(appKey, pusherOptions, factory);
+                new PushNotificationRegistration(appKey, pusherOptions, factory, new ManifestValidator());
 
     }
 

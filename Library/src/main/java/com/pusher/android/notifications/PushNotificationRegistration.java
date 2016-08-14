@@ -1,23 +1,22 @@
 package com.pusher.android.notifications;
 
+import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.google.firebase.iid.FirebaseInstanceId;
-import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.loopj.android.http.JsonHttpResponseHandler;
 import com.pusher.android.PusherAndroidFactory;
 import com.pusher.android.PusherAndroidOptions;
 import com.pusher.android.notifications.fcm.FCMInstanceIDService;
 import com.pusher.android.notifications.fcm.FCMMessagingService;
 import com.pusher.android.notifications.fcm.FCMPushNotificationReceivedListener;
+import com.pusher.android.notifications.gcm.GCMInstanceIDListenerService;
 import com.pusher.android.notifications.gcm.GCMPushNotificationReceivedListener;
 import com.pusher.android.notifications.gcm.PusherGCMListenerService;
 import com.pusher.android.notifications.gcm.GCMRegistrationIntentService;
@@ -26,23 +25,23 @@ import com.pusher.android.notifications.interests.InterestSubscriptionChangeList
 import com.pusher.android.notifications.interests.SubscriptionManager;
 import com.pusher.android.notifications.tokens.InternalRegistrationProgressListener;
 import com.pusher.android.notifications.tokens.PushNotificationRegistrationListener;
+import com.pusher.android.notifications.tokens.RegistrationListenerStack;
+import com.pusher.android.notifications.tokens.TokenRegistry;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import cz.msebera.android.httpclient.entity.StringEntity;
 
 /**
  * Created by jamiepatel on 11/06/2016.
  */
-public class PushNotificationRegistration {
-    public static String TOKEN_RECEIVED_INTENT_FILTER = "__pusher__token__received";
-    public static String TOKEN_FAILED_INTENT_FILTER = "__pusher__token__failed";
+public class PushNotificationRegistration implements InternalRegistrationProgressListener {
+    public static String GCM_CALLED_INTENT_FILTER = "__pusher__gcm_called__received";
     public static String TOKEN_EXTRA_KEY = "token";
 
     private static final String TAG = "PusherPushNotifReg";
@@ -50,17 +49,25 @@ public class PushNotificationRegistration {
     private final String appKey;
     private final PusherAndroidOptions options;
     private final PusherAndroidFactory factory;
+    private final ManifestValidator manifestValidator;
     private SubscriptionManager subscriptionManager; // should only exist on successful registration with Pusher
     private final List<PushNotificationRegistrationListener> pendingSubscriptions =
             Collections.synchronizedList(new ArrayList<PushNotificationRegistrationListener>());
 
-    public PushNotificationRegistration(String appKey, PusherAndroidOptions options, PusherAndroidFactory factory) {
+
+    public PushNotificationRegistration(
+            String appKey,
+            PusherAndroidOptions options,
+            PusherAndroidFactory factory,
+            ManifestValidator manifestValidator
+    ) {
         this.appKey = appKey;
         this.options = options;
         this.factory = factory;
+        this.manifestValidator = manifestValidator;
     }
 
-    public void registerGCM(Context context, String defaultSenderId) {
+    public void registerGCM(Context context, String defaultSenderId) throws ManifestValidator.InvalidManifestException {
         registerGCM(context, defaultSenderId, null);
     }
 
@@ -71,56 +78,69 @@ public class PushNotificationRegistration {
     public void registerGCM(
             Context context,
             String defaultSenderId,
-            final PushNotificationRegistrationListener registrationListener) {
-        Log.d(TAG, "Registering for native notifications");
-        Context applicationContext = context.getApplicationContext();
+            final PushNotificationRegistrationListener registrationListener) throws ManifestValidator.InvalidManifestException {
+        Log.d(TAG, "Registering for GCM notifications");
+
+        manifestValidator.validateGCM(context);
+        final Context applicationContext = context.getApplicationContext();
 
         BroadcastReceiver mRegistrationBroadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 String token = intent.getStringExtra(TOKEN_EXTRA_KEY);
-                onReceiveRegistrationToken(PlatformType.GCM, token, context, registrationListener);
-            }
-        };
-
-        BroadcastReceiver mRegistrationFailedBroadcastReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                if (registrationListener != null) {
-                    registrationListener.onFailedRegistration(
-                            0,
-                            "Failed to get registration ID from GCM"
-                    );
+                if (token != null) {
+                    final TokenRegistry tokenRegistry = newTokenRegistry(registrationListener, context, PlatformType.GCM);
+                    try {
+                        tokenRegistry.receive(token);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    if (registrationListener != null) {
+                        registrationListener.onFailedRegistration(0, "Failed to get registration ID from GCM");
+                    }
                 }
             }
         };
 
-        LocalBroadcastManager localBroadcastManager = LocalBroadcastManager.getInstance(applicationContext);
-
-        // Listen for successfully getting token from GCM
-        localBroadcastManager.registerReceiver(mRegistrationBroadcastReceiver,
-                new IntentFilter(TOKEN_RECEIVED_INTENT_FILTER));
-
-        // Listen for failure to get token from GCM
-        localBroadcastManager.registerReceiver(mRegistrationFailedBroadcastReceiver,
-                new IntentFilter(TOKEN_FAILED_INTENT_FILTER));
+        LocalBroadcastManager.
+                getInstance(applicationContext).
+                registerReceiver(mRegistrationBroadcastReceiver, new IntentFilter(GCM_CALLED_INTENT_FILTER));
 
         Intent intent = new Intent(applicationContext, GCMRegistrationIntentService.class);
         intent.putExtra("gcm_defaultSenderId", defaultSenderId);
         Log.d(TAG, "Starting registration intent service");
         applicationContext.startService(intent);
+
     }
 
-    public void registerFCM(Context context, final PushNotificationRegistrationListener listener) {
-        FCMInstanceIDService.setPushRegistration(this);
+    public void registerFCM(Context context, final PushNotificationRegistrationListener listener) throws ManifestValidator.InvalidManifestException {
+        manifestValidator.validateFCM(context);
+
+        TokenRegistry tokenRegistry = newTokenRegistry(listener, context, PlatformType.FCM);
+        FCMInstanceIDService.setTokenRegistry(tokenRegistry);
         String token = FirebaseInstanceId.getInstance().getToken();
+
         if (token != null) {
-            onReceiveRegistrationToken(PlatformType.FCM, token, context, listener);
+            try {
+                tokenRegistry.receive(token);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
     }
 
-    public void registerFCM(Context context) {
+    public void registerFCM(Context context) throws ManifestValidator.InvalidManifestException {
         registerFCM(context, null);
+    }
+
+    TokenRegistry newTokenRegistry(PushNotificationRegistrationListener customerListener, Context context, PlatformType platformType) {
+        RegistrationListenerStack listenerStack = new RegistrationListenerStack();
+        if (customerListener != null) {
+            listenerStack.push(customerListener);
+        }
+        listenerStack.push(this);
+        return new TokenRegistry(appKey, listenerStack, context, platformType, options, factory);
     }
 
     // Subscribes to an interest
@@ -175,105 +195,17 @@ public class PushNotificationRegistration {
         FCMMessagingService.setOnMessageReceivedListener(listener);
     }
 
-
-    /*
-    This checks SharedPreferences to see if the library has cached the Pusher client id.
-    If so, it will try and update the token associated with that client id.
-    If not it will POST a new client.
-     */
-    public void onReceiveRegistrationToken(
-            final PlatformType platformType,
-            final String token,
-            final Context context,
-            final PushNotificationRegistrationListener registrationListener) {
-        Log.d(TAG, "Received token for " + platformType.toString() + ": " + token);
-        StringEntity params = null;
-        try {
-            params = createRegistrationJSON(platformType, token);
-        } catch (JSONException e) {
-            Log.e(TAG, e.getMessage());
-        }
-
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        String cachedId = preferences.getString(SubscriptionManager.sharedPreferencesKey(appKey, platformType), null);
-
-        final StringEntity finalParams = params;
-        final InternalRegistrationProgressListener internalRegistrationProgressListener = new InternalRegistrationProgressListener() {
-            @Override
-            public void onSuccess(String id) {
-                PushNotificationRegistration registration = PushNotificationRegistration.this;
-                registration.subscriptionManager =
-                        factory.newSubscriptionManager(id, context, appKey, options, platformType);
-                if (registrationListener != null) {
-                    registrationListener.onSuccessfulRegistration();
-                }
-
-                for (Iterator<PushNotificationRegistrationListener> iterator = pendingSubscriptions.iterator(); iterator.hasNext();){
-                    PushNotificationRegistrationListener listener = iterator.next();
-                    listener.onSuccessfulRegistration();
-                    iterator.remove();
-                }
-            }
-
-            @Override
-            public void onFailure(int statusCode, String reason) {
-                if (registrationListener != null) {
-                    registrationListener.onFailedRegistration(statusCode, reason);
-                }
-            }
-
-
-            @Override
-            public void onClientIdInvalid() {
-                uploadRegistrationToken(context, finalParams, this);
-            }
-
-        };
-
-        if (cachedId == null) {
-            uploadRegistrationToken(context, params, internalRegistrationProgressListener);
-        } else {
-            updateRegistrationToken(context, params, cachedId, internalRegistrationProgressListener);
+    @Override
+    public void onSuccessfulRegistration(String clientId, Context context) {
+        subscriptionManager = factory.newSubscriptionManager(clientId, context, appKey, options);
+        for (Iterator<PushNotificationRegistrationListener> iterator = pendingSubscriptions.iterator(); iterator.hasNext();){
+            PushNotificationRegistrationListener listener = iterator.next();
+            listener.onSuccessfulRegistration();
+            iterator.remove();
         }
     }
 
-    /*
-    Uploads registration token for the first time then stores it in SharedPreferences for use
-    on subsequent requests
-     */
-    private void uploadRegistrationToken(
-            Context context,
-            StringEntity params, InternalRegistrationProgressListener internalRegistrationProgressListener
-    ) {
-        String url = options.buildNotificationURL("/clients");
-        AsyncHttpClient client = factory.newHttpClient();
-        JsonHttpResponseHandler handler = factory.newTokenUploadHandler(internalRegistrationProgressListener);
-        client.post(context, url, params, "application/json", handler);
-    }
-
-    /*
-    Updates Pusher's mapping of client id to token.
-     */
-    private void updateRegistrationToken(
-            final Context context,
-            final StringEntity params, final String cachedClientId,
-            final InternalRegistrationProgressListener internalRegistrationProgressListener) {
-        String url = options.buildNotificationURL("/clients/" + cachedClientId + "/token");
-        AsyncHttpClient client = factory.newHttpClient();
-
-        AsyncHttpResponseHandler handler = factory.newTokenUpdateHandler(
-                internalRegistrationProgressListener,
-                cachedClientId
-        );
-        client.put(context, url, params, "application/json", handler);
-    }
-
-    private StringEntity createRegistrationJSON(PlatformType platformType, String token) throws JSONException {
-        JSONObject params = new JSONObject();
-        params.put("platform_type", platformType.toString());
-        params.put("token", token);
-        params.put("app_key", appKey);
-        return new StringEntity(params.toString(), "UTF-8");
-    }
+    @Override
+    public void onFailedRegistration(int statusCode, String reason) {}
 
 }

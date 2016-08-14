@@ -6,6 +6,9 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.FirebaseInstanceIdService;
 import com.pusher.android.notifications.PlatformType;
 import com.pusher.android.notifications.PushNotificationRegistration;
+import com.pusher.android.notifications.tokens.TokenRegistry;
+
+import org.json.JSONException;
 
 /**
  * Created by jamiepatel on 03/08/2016.
@@ -14,10 +17,10 @@ import com.pusher.android.notifications.PushNotificationRegistration;
 public class FCMInstanceIDService extends FirebaseInstanceIdService {
 
     private static final String TAG = "FCMIID";
-    private static PushNotificationRegistration registration;
+    private static TokenRegistry registry;
 
-    public static void setPushRegistration(PushNotificationRegistration reg) {
-        registration = reg;
+    public static void setTokenRegistry(TokenRegistry reg) {
+        registry = reg;
     }
 
     @Override
@@ -25,8 +28,12 @@ public class FCMInstanceIDService extends FirebaseInstanceIdService {
         String token = FirebaseInstanceId.getInstance().getToken();
         Log.d(TAG, "Refreshed token: " + token);
 
-        if (registration != null) {
-            registration.onReceiveRegistrationToken(PlatformType.FCM, token, getApplicationContext(), null);
+        if (registry != null) {
+            try {
+                registry.receive(token);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

@@ -47,6 +47,8 @@ public class GCMRegistrationIntentService extends IntentService {
                 withStopStrategy(StopStrategies.stopAfterAttempt(INSTANCE_ID_RETRY_ATTEMPTS)).
                 build();
 
+        Intent gcmCalled = new Intent(PushNotificationRegistration.GCM_CALLED_INTENT_FILTER);
+
         try {
             token = retryer.call(tokenRetrieval);
         } catch (ExecutionException e) {
@@ -58,14 +60,11 @@ public class GCMRegistrationIntentService extends IntentService {
                             INSTANCE_ID_RETRY_ATTEMPTS +
                             " :" +
                     e.getMessage());
-            Intent failedToGetToken = new Intent(PushNotificationRegistration.TOKEN_FAILED_INTENT_FILTER);
-            LocalBroadcastManager.getInstance(this).sendBroadcast(failedToGetToken);
-            return;
+            token = null;
         }
 
-        Intent receivedToken = new Intent(PushNotificationRegistration.TOKEN_RECEIVED_INTENT_FILTER);
-        receivedToken.putExtra(PushNotificationRegistration.TOKEN_EXTRA_KEY, token);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(receivedToken);
+        gcmCalled.putExtra(PushNotificationRegistration.TOKEN_EXTRA_KEY, token);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(gcmCalled);
     }
 
 }

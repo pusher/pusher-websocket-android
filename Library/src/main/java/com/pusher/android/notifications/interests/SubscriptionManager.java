@@ -14,6 +14,8 @@ import com.pusher.android.notifications.PlatformType;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.List;
+
 import cz.msebera.android.httpclient.entity.StringEntity;
 
 /**
@@ -21,7 +23,6 @@ import cz.msebera.android.httpclient.entity.StringEntity;
  */
 
 public class SubscriptionManager {
-    static final String PUSHER_PUSH_CLIENT_ID_PREFIX = "__pusher__client__key__";
     private static final String TAG = "PClientManager";
     private final String clientId;
     private final Context context;
@@ -29,16 +30,14 @@ public class SubscriptionManager {
     private final PusherAndroidOptions options;
     private final PusherAndroidFactory factory;
 
-    public static String sharedPreferencesKey(String appKey, PlatformType platformType) {
-        return PUSHER_PUSH_CLIENT_ID_PREFIX + platformType.toString() + "__" + appKey;
-    }
+
 
     public SubscriptionManager(
             String clientId,
             Context context,
             String appKey,
+//            List<InterestSubscriptionChange> pendingSubscriptions,
             PusherAndroidOptions options,
-            PlatformType platformType,
             PusherAndroidFactory factory
     ) {
         this.clientId = clientId;
@@ -46,8 +45,10 @@ public class SubscriptionManager {
         this.appKey = appKey;
         this.options = options;
         this.factory = factory;
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        preferences.edit().putString(sharedPreferencesKey(appKey, platformType), clientId).apply();
+    }
+
+    private void sendSubscriptionChanges() {
+
     }
 
     public void sendSubscriptionChange(String interest, InterestSubscriptionChange change, InterestSubscriptionChangeListener listener) {
