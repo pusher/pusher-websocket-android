@@ -1,19 +1,17 @@
 package com.pusher.android.notifications.interests;
 
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.ResponseHandlerInterface;
 import com.pusher.android.PusherAndroidFactory;
 import com.pusher.android.PusherAndroidOptions;
-import com.pusher.android.notifications.PlatformType;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Iterator;
 import java.util.List;
 
 import cz.msebera.android.httpclient.entity.StringEntity;
@@ -30,13 +28,10 @@ public class SubscriptionManager {
     private final PusherAndroidOptions options;
     private final PusherAndroidFactory factory;
 
-
-
     public SubscriptionManager(
             String clientId,
             Context context,
             String appKey,
-//            List<InterestSubscriptionChange> pendingSubscriptions,
             PusherAndroidOptions options,
             PusherAndroidFactory factory
     ) {
@@ -47,11 +42,18 @@ public class SubscriptionManager {
         this.factory = factory;
     }
 
-    private void sendSubscriptionChanges() {
-
+    public void sendSubscriptions(List<Subscription> pendingSubscriptions) {
+        for (Iterator<Subscription> iterator = pendingSubscriptions.iterator(); iterator.hasNext();){
+            Subscription subscription = iterator.next();
+            sendSubscription(subscription);
+            iterator.remove();
+        }
     }
 
-    public void sendSubscriptionChange(String interest, InterestSubscriptionChange change, InterestSubscriptionChangeListener listener) {
+    public void sendSubscription(Subscription subscription) {
+        String interest =  subscription.getInterest();
+        InterestSubscriptionChange change = subscription.getChange();
+
         JSONObject json = new JSONObject();
         try {
             json.put("app_key", appKey);
@@ -61,10 +63,7 @@ public class SubscriptionManager {
         StringEntity entity = new StringEntity(json.toString(), "UTF-8");
 
         String url = options.buildNotificationURL("/clients/" + clientId + "/interests/" + interest);
-        ResponseHandlerInterface handler = factory.newSubscriptionChangeHandler(
-                interest,
-                change,
-                listener);
+        ResponseHandlerInterface handler = factory.newSubscriptionChangeHandler(subscription);
         AsyncHttpClient client = factory.newHttpClient();
         switch (change) {
             case SUBSCRIBE:

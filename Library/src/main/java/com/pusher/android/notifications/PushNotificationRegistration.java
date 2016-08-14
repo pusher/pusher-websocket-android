@@ -1,12 +1,9 @@
 package com.pusher.android.notifications;
 
-import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
@@ -16,12 +13,12 @@ import com.pusher.android.PusherAndroidOptions;
 import com.pusher.android.notifications.fcm.FCMInstanceIDService;
 import com.pusher.android.notifications.fcm.FCMMessagingService;
 import com.pusher.android.notifications.fcm.FCMPushNotificationReceivedListener;
-import com.pusher.android.notifications.gcm.GCMInstanceIDListenerService;
 import com.pusher.android.notifications.gcm.GCMPushNotificationReceivedListener;
 import com.pusher.android.notifications.gcm.PusherGCMListenerService;
 import com.pusher.android.notifications.gcm.GCMRegistrationIntentService;
 import com.pusher.android.notifications.interests.InterestSubscriptionChange;
 import com.pusher.android.notifications.interests.InterestSubscriptionChangeListener;
+import com.pusher.android.notifications.interests.Subscription;
 import com.pusher.android.notifications.interests.SubscriptionManager;
 import com.pusher.android.notifications.tokens.InternalRegistrationProgressListener;
 import com.pusher.android.notifications.tokens.PushNotificationRegistrationListener;
@@ -31,7 +28,6 @@ import com.pusher.android.notifications.tokens.TokenRegistry;
 import org.json.JSONException;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -51,8 +47,8 @@ public class PushNotificationRegistration implements InternalRegistrationProgres
     private final PusherAndroidFactory factory;
     private final ManifestValidator manifestValidator;
     private SubscriptionManager subscriptionManager; // should only exist on successful registration with Pusher
-    private final List<PushNotificationRegistrationListener> pendingSubscriptions =
-            Collections.synchronizedList(new ArrayList<PushNotificationRegistrationListener>());
+    private List<Subscription> pendingSubscriptions =
+            Collections.synchronizedList(new ArrayList<Subscription>());
 
 
     public PushNotificationRegistration(
@@ -134,13 +130,13 @@ public class PushNotificationRegistration implements InternalRegistrationProgres
         registerFCM(context, null);
     }
 
-    TokenRegistry newTokenRegistry(PushNotificationRegistrationListener customerListener, Context context, PlatformType platformType) {
+    private TokenRegistry newTokenRegistry(PushNotificationRegistrationListener customerListener, Context context, PlatformType platformType) {
         RegistrationListenerStack listenerStack = new RegistrationListenerStack();
         if (customerListener != null) {
             listenerStack.push(customerListener);
         }
         listenerStack.push(this);
-        return new TokenRegistry(appKey, listenerStack, context, platformType, options, factory);
+        return factory.newTokenRegistry(appKey, listenerStack, context, platformType, options);
     }
 
     // Subscribes to an interest
@@ -167,22 +163,11 @@ public class PushNotificationRegistration implements InternalRegistrationProgres
             final InterestSubscriptionChange change,
             final InterestSubscriptionChangeListener listener) {
         Log.d(TAG, "Trying to "+change+" to: " + interest);
+        Subscription subscription = new Subscription(interest, change, listener);
         if (subscriptionManager != null) {
-            subscriptionManager.sendSubscriptionChange(interest, change, listener);
+            subscriptionManager.sendSubscription(subscription);
         } else {
-            pendingSubscriptions.add(new PushNotificationRegistrationListener() {
-                @Override
-                public void onSuccessfulRegistration() {
-                    subscriptionManager.sendSubscriptionChange(interest, change, listener);
-                }
-
-                @Override
-                public void onFailedRegistration(int statusCode, String response) {
-                    if (listener != null) {
-                        listener.onSubscriptionChangeFailed(0, "Failed to "+change+" as registration failed");
-                    }
-                }
-            });
+            pendingSubscriptions.add(subscription);
         }
     }
 
@@ -198,14 +183,17 @@ public class PushNotificationRegistration implements InternalRegistrationProgres
     @Override
     public void onSuccessfulRegistration(String clientId, Context context) {
         subscriptionManager = factory.newSubscriptionManager(clientId, context, appKey, options);
-        for (Iterator<PushNotificationRegistrationListener> iterator = pendingSubscriptions.iterator(); iterator.hasNext();){
-            PushNotificationRegistrationListener listener = iterator.next();
-            listener.onSuccessfulRegistration();
-            iterator.remove();
-        }
+        subscriptionManager.sendSubscriptions(pendingSubscriptions);
+        pendingSubscriptions = null;
     }
 
     @Override
-    public void onFailedRegistration(int statusCode, String reason) {}
+    public void onFailedRegistration(int statusCode, String reason) {
+        for (Iterator<Subscription> iterator = pendingSubscriptions.iterator(); iterator.hasNext();){
+            Subscription subscription = iterator.next();
+            subscription.getListener().onSubscriptionChangeFailed(statusCode, reason);
+            iterator.remove();
+        }
+    }
 
 }

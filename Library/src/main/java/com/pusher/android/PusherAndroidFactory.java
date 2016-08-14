@@ -7,12 +7,13 @@ import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.SyncHttpClient;
 import com.pusher.android.notifications.PlatformType;
 import com.pusher.android.notifications.interests.InterestSubscriptionChange;
-import com.pusher.android.notifications.tokens.InternalRegistrationProgressListener;
 import com.pusher.android.notifications.interests.InterestSubscriptionChangeListener;
+import com.pusher.android.notifications.interests.Subscription;
 import com.pusher.android.notifications.interests.SubscriptionChangeHandler;
 import com.pusher.android.notifications.interests.SubscriptionManager;
 import com.pusher.android.notifications.tokens.InvalidClientIdHandler;
 import com.pusher.android.notifications.tokens.RegistrationListenerStack;
+import com.pusher.android.notifications.tokens.TokenRegistry;
 import com.pusher.android.notifications.tokens.TokenUpdateHandler;
 import com.pusher.android.notifications.tokens.TokenUploadHandler;
 
@@ -22,11 +23,8 @@ import cz.msebera.android.httpclient.entity.StringEntity;
  * Created by jamiepatel on 12/07/2016.
  */
 public class PusherAndroidFactory {
-    public SubscriptionChangeHandler newSubscriptionChangeHandler(
-            String interest,
-            InterestSubscriptionChange change,
-            InterestSubscriptionChangeListener listener) {
-        return new SubscriptionChangeHandler(interest, change, listener);
+    public SubscriptionChangeHandler newSubscriptionChangeHandler(Subscription subscription) {
+        return new SubscriptionChangeHandler(subscription);
     }
 
     public AsyncHttpClient newHttpClient() {
@@ -48,5 +46,12 @@ public class PusherAndroidFactory {
             PusherAndroidOptions options
             ) {
         return new SubscriptionManager(clientId, context, appKey, options, this);
+    }
+
+    public TokenRegistry newTokenRegistry(
+            String appKey, RegistrationListenerStack listenerStack,
+            Context context, PlatformType platformType,
+            PusherAndroidOptions options) {
+        return new TokenRegistry(appKey, listenerStack, context, platformType, options, this);
     }
 }

@@ -12,33 +12,29 @@ import cz.msebera.android.httpclient.Header;
 
 public class SubscriptionChangeHandler extends AsyncHttpResponseHandler {
     private static final String TAG = "PSubHandler";
-    private final String interest;
-    private final InterestSubscriptionChange change;
-    private final InterestSubscriptionChangeListener listener;
+    private final Subscription subscription;
 
     public SubscriptionChangeHandler(
-            String interest,
-            InterestSubscriptionChange change,
-            InterestSubscriptionChangeListener listener) {
-        this.interest = interest;
-        this.change = change;
-        this.listener = listener;
+            Subscription subscription) {
+        this.subscription = subscription;
     }
-
-    @Override
-    public void setUsePoolThread(boolean pool) {
-        super.setUsePoolThread(true);
-    }
-
 
     @Override
     public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+        InterestSubscriptionChange change = subscription.getChange();
+        InterestSubscriptionChangeListener listener = subscription.getListener();
+        String interest = subscription.getInterest();
+
         Log.d(TAG, "Successfully sent subscription change " + change + " for interest: " + interest);
         if (listener != null) listener.onSubscriptionChangeSucceeded();
     }
 
     @Override
     public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+        InterestSubscriptionChange change = subscription.getChange();
+        InterestSubscriptionChangeListener listener = subscription.getListener();
+        String interest = subscription.getInterest();
+
         String log = "Received status " + statusCode;
         String responseBodyString = new String();
         if (responseBody != null) {
