@@ -21,7 +21,7 @@ import java.util.List;
  */
 
 public class ManifestValidator {
-    public void validateGCM(Context context) throws InvalidManifestException {
+    void validateGCM(Context context) throws InvalidManifestException {
         // defined in-function so as to avoid NoClassDefFoundErrors when not using GCM
         final ArrayList<Class<? extends Service>> gcmServices =
                 new ArrayList<>(Arrays.asList(
@@ -31,7 +31,7 @@ public class ManifestValidator {
         checkServicesInManifest(gcmServices, context);
     }
 
-    public void validateFCM(Context context) throws InvalidManifestException {
+    void validateFCM(Context context) throws InvalidManifestException {
         final ArrayList<Class<? extends Service>> fcmServices = new ArrayList<Class<? extends Service>>(Arrays.asList(
                 FCMInstanceIDService.class, FCMMessagingService.class
         ));
@@ -55,7 +55,7 @@ public class ManifestValidator {
 
 
     public class InvalidManifestException extends Exception {
-        public InvalidManifestException(String message) {
+        InvalidManifestException(String message) {
             super(message);
         }
     }
