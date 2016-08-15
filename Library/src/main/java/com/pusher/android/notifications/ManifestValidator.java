@@ -21,21 +21,20 @@ import java.util.List;
  */
 
 public class ManifestValidator {
-    private final ArrayList<Class<? extends Service>> gcmServices =
-            new ArrayList<>(Arrays.asList(
-                    PusherGCMListenerService.class,
-                    GCMInstanceIDListenerService.class,
-                    GCMRegistrationIntentService.class));
-
-    private final ArrayList<Class<? extends Service>> fcmServices = new ArrayList<Class<? extends Service>>(Arrays.asList(
-            FCMInstanceIDService.class, FCMMessagingService.class
-    ));
-
     public void validateGCM(Context context) throws InvalidManifestException {
+        // defined in-function so as to avoid NoClassDefFoundErrors when not using GCM
+        final ArrayList<Class<? extends Service>> gcmServices =
+                new ArrayList<>(Arrays.asList(
+                        PusherGCMListenerService.class,
+                        GCMInstanceIDListenerService.class,
+                        GCMRegistrationIntentService.class));
         checkServicesInManifest(gcmServices, context);
     }
 
     public void validateFCM(Context context) throws InvalidManifestException {
+        final ArrayList<Class<? extends Service>> fcmServices = new ArrayList<Class<? extends Service>>(Arrays.asList(
+                FCMInstanceIDService.class, FCMMessagingService.class
+        ));
         checkServicesInManifest(fcmServices, context);
     }
 
