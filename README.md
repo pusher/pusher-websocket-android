@@ -60,17 +60,6 @@ Add to your `AndroidManifest.xml` the following:
     <!-- ... -->
 
     <!-- <application> -->
-    <!-- GCM Receiver  -->
-    <receiver
-        android:name="com.google.android.gms.gcm.GcmReceiver"
-        android:exported="true"
-        android:permission="com.google.android.c2dm.permission.SEND" >
-        <intent-filter>
-            <action android:name="com.google.android.c2dm.intent.RECEIVE" />
-            <category android:name="gcm.play.android.samples.com.gcmquickstart" />
-        </intent-filter>
-    </receiver>
-
     <!-- Pusher's GCM listeners and services -->
     <receiver
         android:name="com.google.android.gms.gcm.GcmReceiver"
