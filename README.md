@@ -54,7 +54,6 @@ This feature requires some set up on your behalf. See [our guide to setting up p
 * That you have an app (a.k.a. project) on the Google Developers Console
 * That you have a Server API Key which you have uploaded to the Pusher dashboard
 * That you have a [valid configuration file](https://developers.google.com/cloud-messaging/android/client#get-config) for Google services in your `app/` directory
-* Your target Android SDK is 23 or higher
 
 Add to your `AndroidManifest.xml` the following:
 
