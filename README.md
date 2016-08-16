@@ -35,6 +35,16 @@ dependencies {
 apply plugin: 'com.google.gms.google-services'
 ```
 
+In your project-level `build.gradle` add:
+
+```groovy
+buildscript {
+  dependencies {
+    classpath 'com.google.gms:google-services:3.0.0'
+  }
+}
+```
+
 ## Push Notifications
 
 ### GCM
