@@ -28,7 +28,15 @@ public class PusherAndroidFactory {
     }
 
     public AsyncHttpClient newHttpClient() {
-        return Looper.myLooper() == Looper.getMainLooper() ? new AsyncHttpClient() : new SyncHttpClient();
+        AsyncHttpClient client;
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            client = new AsyncHttpClient();
+        } else {
+            client = new SyncHttpClient();
+        }
+        
+        client.addHeader("X-Pusher-Library", "pusher-websocket-android " + BuildConfig.VERSION_NAME);
+        return client;
     }
 
     public TokenUploadHandler newTokenUploadHandler(Context context, RegistrationListenerStack listenerStack) {
