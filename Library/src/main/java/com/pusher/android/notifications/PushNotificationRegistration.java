@@ -184,7 +184,7 @@ public class PushNotificationRegistration implements InternalRegistrationProgres
     public void onSuccessfulRegistration(String clientId, Context context) {
         subscriptionManager = factory.newSubscriptionManager(clientId, context, appKey, options);
         subscriptionManager.sendSubscriptions(pendingSubscriptions);
-        pendingSubscriptions = null;
+        pendingSubscriptions = Collections.synchronizedList(new ArrayList<Subscription>());
     }
 
     @Override
