@@ -34,8 +34,8 @@ repositories {
 dependencies {
     provided 'com.google.android.gms:play-services-gcm:9.+'
     provided 'com.android.support:appcompat-v7:23.+'
-    provided 'com.google.firebase:firebase-core:9.+'
-    provided 'com.google.firebase:firebase-messaging:9.4.0'
+    provided 'com.google.firebase:firebase-core:9.6.+'
+    provided 'com.google.firebase:firebase-messaging:9.6.+'
     compile 'com.pusher:pusher-java-client:1.2.1'
     compile 'com.loopj.android:android-async-http:1.4.9'
     compile "com.github.rholder:guava-retrying:2.0.0"
