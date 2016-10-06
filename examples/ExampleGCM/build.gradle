@@ -1,0 +1,50 @@
+apply plugin: 'com.android.application'
+
+buildscript {
+    repositories {
+        jcenter() // or mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.2.0'
+        classpath 'com.google.gms:google-services:3.0.0'
+    }
+}
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.3"
+
+    defaultConfig {
+        applicationId "pusher.example"
+        minSdkVersion 21
+        targetSdkVersion 23
+        versionCode 1
+        versionName "1.0"
+        multiDexEnabled true
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    dexOptions {
+        preDexLibraries = false
+    }
+}
+
+repositories {
+    mavenCentral()
+    jcenter()
+    maven { url 'http://clojars.org/repo' }
+}
+
+dependencies {
+    compile project(':pusher-websocket-android')
+    compile 'com.google.android.gms:play-services-gcm:9.0.2'
+    compile 'com.android.support:appcompat-v7:23.4.0'
+}
+
+apply plugin: 'com.google.gms.google-services'
