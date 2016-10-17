@@ -28,7 +28,7 @@ dependencies {
   compile 'com.google.firebase:firebase-core:9.4.0'
 
 
-  compile 'com.pusher:pusher-websocket-android:0.2.1'
+  compile 'com.pusher:pusher-websocket-android:0.3.1'
 }
 
 // for GCM and FCM
