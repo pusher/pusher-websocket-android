@@ -35,7 +35,11 @@ public class GCMRegistrationIntentService extends IntentService {
         while (token == null && retryAttempts < INSTANCE_ID_RETRY_ATTEMPTS){
             try {
                 token = instanceID.getToken(defaultSenderId, GoogleCloudMessaging.INSTANCE_ID_SCOPE, null);
-            } catch (IOException e) {
+            }
+            catch (IOException e) {
+                Log.d(TAG, "Failed to get token from InstanceID", e);
+            }
+            finally {
                 retryAttempts++;
             }
         }
