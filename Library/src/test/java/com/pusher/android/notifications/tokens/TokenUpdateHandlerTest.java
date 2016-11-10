@@ -2,7 +2,6 @@ package com.pusher.android.notifications.tokens;
 
 import android.content.Context;
 
-import com.pusher.android.BuildConfig;
 import com.pusher.android.notifications.PlatformType;
 
 import org.json.JSONObject;
@@ -11,20 +10,17 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Config;
 
 import cz.msebera.android.httpclient.entity.StringEntity;
 
-import static org.junit.Assert.*;
 import static org.mockito.Mockito.verify;
 
 /**
  * Created by jamiepatel on 14/08/2016.
  */
-@RunWith(RobolectricGradleTestRunner.class)
-@Config(constants = BuildConfig.class)
+@RunWith(RobolectricTestRunner.class)
 public class TokenUpdateHandlerTest {
     private TokenUpdateHandler tokenUpdateHandler;
     private Context context = RuntimeEnvironment.application.getApplicationContext();

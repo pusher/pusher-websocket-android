@@ -4,7 +4,6 @@ import android.content.Context;
 import android.preference.PreferenceManager;
 
 import com.loopj.android.http.AsyncHttpClient;
-import com.pusher.android.BuildConfig;
 import com.pusher.android.PusherAndroidFactory;
 import com.pusher.android.PusherAndroidOptions;
 import com.pusher.android.notifications.PlatformType;
@@ -14,12 +13,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Config;
+import org.skyscreamer.jsonassert.JSONAssert;
 
 import cz.msebera.android.httpclient.HttpEntity;
 import cz.msebera.android.httpclient.entity.StringEntity;
@@ -28,15 +26,13 @@ import cz.msebera.android.httpclient.util.EntityUtils;
 import static org.mockito.Matchers.any;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
  * Created by jamiepatel on 12/08/2016.
  */
-@RunWith(RobolectricGradleTestRunner.class)
-@Config(constants = BuildConfig.class)
+@RunWith(RobolectricTestRunner.class)
 public class TokenRegistryTest {
 
     private TokenRegistry tokenRegistry;
@@ -79,9 +75,10 @@ public class TokenRegistryTest {
 
         // test proper params sent
         HttpEntity params = (HttpEntity) paramsCaptor.getValue();
-        assertEquals(
+        JSONAssert.assertEquals(
                 EntityUtils.toString(params),
-                "{\"platform_type\":\"fcm\",\"token\":\"mysuperspecialfcmtoken\",\"app_key\":\"superkey\"}"
+                "{\"platform_type\":\"fcm\",\"token\":\"mysuperspecialfcmtoken\",\"app_key\":\"superkey\"}",
+                true
         );
     }
 
@@ -115,9 +112,9 @@ public class TokenRegistryTest {
                 eq(tokenUpdateHandler)
         );
 
-        assertEquals(
-                EntityUtils.toString((HttpEntity) paramsCaptor.getValue()),
-                "{\"platform_type\":\"fcm\",\"token\":\"woot-token-woot\",\"app_key\":\"superkey\"}"
+        JSONAssert.assertEquals(EntityUtils.toString((HttpEntity) paramsCaptor.getValue()),
+                "{\"platform_type\":\"fcm\",\"token\":\"woot-token-woot\",\"app_key\":\"superkey\"}",
+                true
         );
     }
 

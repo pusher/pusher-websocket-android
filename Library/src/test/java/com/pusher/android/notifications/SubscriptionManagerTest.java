@@ -4,7 +4,6 @@ import android.content.Context;
 import android.preference.PreferenceManager;
 
 import com.loopj.android.http.AsyncHttpClient;
-import com.pusher.android.BuildConfig;
 import com.pusher.android.PusherAndroidFactory;
 import com.pusher.android.PusherAndroidOptions;
 import com.pusher.android.notifications.interests.InterestSubscriptionChange;
@@ -20,9 +19,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Config;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -43,8 +41,7 @@ import static org.mockito.Mockito.when;
 /**
  * Created by jamiepatel on 17/07/2016.
  */
-@RunWith(RobolectricGradleTestRunner.class)
-@Config(constants = BuildConfig.class)
+@RunWith(RobolectricTestRunner.class)
 public class SubscriptionManagerTest {
 
     private @Mock
