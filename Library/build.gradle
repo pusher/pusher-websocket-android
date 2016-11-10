@@ -1,9 +1,9 @@
 buildscript {
     repositories {
-        mavenCentral()
+        jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.1.+'
+        classpath 'com.android.tools.build:gradle:2.2.2'
         classpath 'com.google.gms:google-services:3.0.0'
 
     }
@@ -13,12 +13,12 @@ apply plugin: 'com.android.library'
 apply from: 'maven-push.gradle'
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion '23.0.3'
+    compileSdkVersion 25
+    buildToolsVersion '25.0.0'
 
     defaultConfig {
         minSdkVersion 9
-        targetSdkVersion 23
+        targetSdkVersion 25
     }
     testOptions {
         unitTests.returnDefaultValues = true
@@ -26,23 +26,28 @@ android {
 }
 
 repositories {
-    mavenCentral()
     jcenter()
     maven { url 'http://clojars.org/repo' }
 }
 
+ext.play_services_version='9.8.0'
+ext.support_lib_version='25.0.0'
+ext.pusher_java_client_version='1.2.1'
+ext.robolectric_version='3.1.4'
+
 dependencies {
-    provided 'com.google.android.gms:play-services-gcm:9.+'
-    provided 'com.android.support:appcompat-v7:23.+'
-    provided 'com.google.firebase:firebase-core:9.6.+'
-    provided 'com.google.firebase:firebase-messaging:9.6.+'
-    compile 'com.pusher:pusher-java-client:1.2.1'
+    provided "com.android.support:appcompat-v7:$support_lib_version"
+    provided "com.google.android.gms:play-services-gcm:$play_services_version"
+    provided "com.google.firebase:firebase-core:$play_services_version"
+    provided "com.google.firebase:firebase-messaging:$play_services_version"
+    compile "com.pusher:pusher-java-client:$pusher_java_client_version"
     compile 'com.loopj.android:android-async-http:1.4.9'
-    compile "com.github.rholder:guava-retrying:2.0.0"
 
     testCompile 'junit:junit:4.12'
-    testCompile "org.robolectric:robolectric:3.1.1"
-    testCompile "org.robolectric:shadows-support-v4:3.1.1"
-    testCompile 'org.mockito:mockito-core:1.10.19'
-    testCompile 'com.squareup.okhttp3:mockwebserver:3.3.1'
+    testCompile "org.robolectric:robolectric:$robolectric_version"
+    testCompile "org.robolectric:shadows-support-v4:$robolectric_version"
+    testCompile "com.squareup.okhttp3:mockwebserver:3.4.2"
+    testCompile 'org.mockito:mockito-core:2.2.15'
+    testCompile 'org.skyscreamer:jsonassert:1.4.0'
+
 }
