@@ -18,7 +18,7 @@ public class FCMMessagingService extends FirebaseMessagingService {
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
-        Log.d(TAG, "Received from GCM: " + remoteMessage);
+        Log.d(TAG, "Received from FCM: " + remoteMessage);
 
         if (listener != null) {
             listener.onMessageReceived(remoteMessage);
