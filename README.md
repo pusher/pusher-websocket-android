@@ -21,14 +21,14 @@ Then add these dependencies to your `$PROJECT_ROOT/app/build.gradle`:
 ```groovy
 dependencies {
   // for GCM
-  compile 'com.google.android.gms:play-services-gcm:9.0.0'
+  compile 'com.google.android.gms:play-services-gcm:9.8.0'
 
   // for FCM
-  compile 'com.google.firebase:firebase-messaging:9.4.0'
-  compile 'com.google.firebase:firebase-core:9.4.0'
+  compile 'com.google.firebase:firebase-messaging:9.8.0'
+  compile 'com.google.firebase:firebase-core:9.8.0'
 
 
-  compile 'com.pusher:pusher-websocket-android:0.3.1'
+  compile 'com.pusher:pusher-websocket-android:0.4.0'
 }
 
 // for GCM and FCM
