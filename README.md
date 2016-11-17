@@ -8,15 +8,7 @@ This README will only cover library-specific features. In order to get the core 
 
 ## Installation
 
-You can install the library via Gradle. First add an additional repository to your `$PROJECT_ROOT/build.gradle`:
-
-```groovy
-repositories {
-  maven { url 'http://clojars.org/repo' }
-}
-```
-
-Then add these dependencies to your `$PROJECT_ROOT/app/build.gradle`:
+You can install the library via Gradle. First add these dependencies to your `$PROJECT_ROOT/app/build.gradle`:
 
 ```groovy
 dependencies {
@@ -28,7 +20,7 @@ dependencies {
   compile 'com.google.firebase:firebase-core:9.8.0'
 
 
-  compile 'com.pusher:pusher-websocket-android:0.4.0'
+  compile 'com.pusher:pusher-websocket-android:0.5.0'
 }
 
 // for GCM and FCM
