@@ -27,12 +27,11 @@ android {
 
 repositories {
     jcenter()
-    maven { url 'http://clojars.org/repo' }
 }
 
 ext.play_services_version='9.8.0'
-ext.support_lib_version='25.0.0'
-ext.pusher_java_client_version='1.3.0'
+ext.support_lib_version='25.0.1'
+ext.pusher_java_client_version='1.4.0'
 ext.robolectric_version='3.1.4'
 
 dependencies {
