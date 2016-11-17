@@ -37,12 +37,10 @@ android {
 
 repositories {
     mavenCentral()
-    jcenter()
-    maven { url 'http://clojars.org/repo' }
 }
 
 ext.play_services_version='9.8.0'
-ext.support_lib_version='25.0.0'
+ext.support_lib_version='25.0.1'
 
 dependencies {
     compile project(':pusher-websocket-android')
