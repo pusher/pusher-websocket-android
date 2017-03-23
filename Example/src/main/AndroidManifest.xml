@@ -26,7 +26,28 @@
             </intent-filter>
         </activity>
 
+        <!-- FOR FCM -->
+        <!-- [START firebase_service] -->
+        <!-- TODO: do not include this if you use your own FirebaseMessagingService implementation. -->
+        <service
+            android:name="com.pusher.android.notifications.fcm.FCMMessagingService">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+            </intent-filter>
+        </service>
+        <!-- [END firebase_service] -->
 
+        <!-- Custom FirebaseMessagingService implementation -->
+        <!--<service-->
+            <!--android:name=".CustomFCMMessagingService">-->
+            <!--<intent-filter>-->
+                <!--<action android:name="com.google.firebase.MESSAGING_EVENT"/>-->
+            <!--</intent-filter>-->
+        <!--</service>-->
+
+
+
+        <!--FOR GCM-->
         <!-- [START gcm_receiver] -->
         <receiver
             android:name="com.google.android.gms.gcm.GcmReceiver"
@@ -37,9 +58,9 @@
                 <category android:name="gcm.play.android.samples.com.gcmquickstart" />
             </intent-filter>
         </receiver>
-        <!-- [END gcm_receiver] -->
+        <!--[END gcm_receiver] -->
 
-        <!-- [START gcm_listener] -->
+        <!--[START gcm_listener] -->
         <service
             android:name="com.pusher.android.notifications.gcm.PusherGCMListenerService"
             android:exported="false" >
@@ -47,8 +68,8 @@
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
             </intent-filter>
         </service>
-        <!-- [END gcm_listener] -->
-        <!-- [START instanceId_listener] -->
+        <!--[END gcm_listener] -->
+        <!--[START instanceId_listener] -->
         <service
             android:name="com.pusher.android.notifications.gcm.GCMInstanceIDListenerService"
             android:exported="false">
@@ -56,31 +77,12 @@
                 <action android:name="com.google.android.gms.iid.InstanceID"/>
             </intent-filter>
         </service>
-        <!-- [END instanceId_listener] -->
+        <!--[END instanceId_listener] -->
 
         <service
             android:name="com.pusher.android.notifications.gcm.GCMRegistrationIntentService"
             android:exported="false">
         </service>
         <!-- END ATTENTION -->
-
-        <!-- FOR FCM -->
-        <!-- [START firebase_service] -->
-        <service
-            android:name="com.pusher.android.notifications.fcm.FCMMessagingService">
-            <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
-            </intent-filter>
-        </service>
-        <!-- [END firebase_service] -->
-        <!-- [START firebase_iid_service] -->
-        <service
-            android:name="com.pusher.android.notifications.fcm.FCMInstanceIDService">
-            <intent-filter>
-                <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
-            </intent-filter>
-        </service>
-        <!-- [END firebase_iid_service] -->
     </application>
-
 </manifest>

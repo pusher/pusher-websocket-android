@@ -8,6 +8,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.messaging.FirebaseMessagingService;
 import com.pusher.android.PusherAndroidFactory;
 import com.pusher.android.PusherAndroidOptions;
 import com.pusher.android.notifications.fcm.FCMInstanceIDService;
@@ -33,9 +34,6 @@ import java.util.Iterator;
 import java.util.List;
 
 
-/**
- * Created by jamiepatel on 11/06/2016.
- */
 public class PushNotificationRegistration implements InternalRegistrationProgressListener {
     public static String GCM_CALLED_INTENT_FILTER = "__pusher__gcm_called__received";
     public static String TOKEN_EXTRA_KEY = "token";
@@ -49,7 +47,6 @@ public class PushNotificationRegistration implements InternalRegistrationProgres
     private SubscriptionManager subscriptionManager; // should only exist on successful registration with Pusher
     private List<Subscription> pendingSubscriptions =
             Collections.synchronizedList(new ArrayList<Subscription>());
-
 
     public PushNotificationRegistration(
             String appKey,
@@ -171,11 +168,19 @@ public class PushNotificationRegistration implements InternalRegistrationProgres
         }
     }
 
-    // Sets the listener to execute when a notification is received
+    /**
+     * Sets the listener to execute when a notification is received
+     * */
     public void setGCMListener(GCMPushNotificationReceivedListener listener) {
         PusherGCMListenerService.setOnMessageReceivedListener(listener);
     }
 
+    /**
+     * Sets the FCM listener if you use Pusher's FCMMessagingService in your manifest.
+     * If you intend to use a different service to receive FCM notifications then this call does nothing and you need to handle the listener yourself.
+     *
+     * @param listener the listener to set.
+     * */
     public void setFCMListener(FCMPushNotificationReceivedListener listener) {
         FCMMessagingService.setOnMessageReceivedListener(listener);
     }

@@ -11,6 +11,7 @@ import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.firebase.messaging.RemoteMessage;
 import com.pusher.android.PusherAndroid;
 import com.pusher.android.PusherAndroidOptions;
+import com.pusher.android.notifications.ManifestValidator;
 import com.pusher.android.notifications.PushNotificationRegistration;
 import com.pusher.android.notifications.fcm.FCMPushNotificationReceivedListener;
 import com.pusher.android.notifications.gcm.GCMPushNotificationReceivedListener;
@@ -34,32 +35,19 @@ public class MainActivity extends Activity {
 
         PusherAndroidOptions options = new PusherAndroidOptions();
 
-        PusherAndroid pusher = new PusherAndroid("key", options);
-        pusher.connect(new ConnectionEventListener() {
-            @Override
-            public void onConnectionStateChange(ConnectionStateChange change) {
-                System.out.println("State changed to " + change.getCurrentState() +
-                        " from " + change.getPreviousState());
-            }
+        PusherAndroid pusher = new PusherAndroid("YOUR_APP_KEY", options);
 
-            @Override
-            public void onError(String message, String code, Exception e) {
-                System.out.println("There was a problem connecting!");
-            }
-        }, ConnectionState.ALL);
 
         if (checkPlayServices()) {
             String defaultSenderId = getString(R.string.gcm_defaultSenderId);
             PushNotificationRegistration nativePusher = pusher.nativePusher();
-            nativePusher.setGCMListener(new GCMPushNotificationReceivedListener() {
+            nativePusher.setFCMListener(new FCMPushNotificationReceivedListener() {
                 @Override
-                public void onMessageReceived(String from, Bundle data) {
-                    String message = data.getString("message");
-                    Log.d(TAG, "PUSHER!!!");
-                    Log.d(TAG, "From: " + from);
-                    Log.d(TAG, "Message: " + message);
+                public void onMessageReceived(RemoteMessage remoteMessage) {
+
                 }
             });
+
 
             nativePusher.subscribe("donuts", new InterestSubscriptionChangeListener() {
                 @Override
@@ -90,15 +78,41 @@ public class MainActivity extends Activity {
                 }
             };
 
+            //FCM example:
+            //Use this if using Pusher's FCMMessagingService - this is not used if you have your custom service to receive notifications
             nativePusher.setFCMListener(new FCMPushNotificationReceivedListener() {
                 @Override
                 public void onMessageReceived(RemoteMessage remoteMessage) {
-
-                }
+                    String message = remoteMessage.getNotification().getBody();
+                    Log.d(TAG, "PUSHER!!!");
+                    Log.d(TAG, "From: " + remoteMessage.getFrom());
+                    Log.d(TAG, "Message: " + message);                }
             });
 
-//            nativePusher.registerGCM(this, defaultSenderId, );
-            nativePusher.registerFCM(getApplicationContext(), regListener);
+            try {
+                nativePusher.registerFCM(getApplicationContext(), regListener);
+            } catch (ManifestValidator.InvalidManifestException e) {
+                e.printStackTrace();
+            }
+
+
+            //GCM example:
+            nativePusher.setGCMListener(new GCMPushNotificationReceivedListener() {
+                @Override
+                public void onMessageReceived(String from, Bundle data) {
+                    String message = data.getString("message");
+                    Log.d(TAG, "PUSHER!!!");
+                    Log.d(TAG, "From: " + from);
+                    Log.d(TAG, "Message: " + message);
+                }
+            });
+            
+            try {
+                nativePusher.registerGCM(this, defaultSenderId, regListener);
+
+            } catch (ManifestValidator.InvalidManifestException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -121,27 +135,5 @@ public class MainActivity extends Activity {
             return false;
         }
         return true;
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 }
