@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.util.Log;
 
 import com.pusher.android.notifications.fcm.FCMInstanceIDService;
 import com.pusher.android.notifications.fcm.FCMMessagingService;
@@ -32,17 +33,23 @@ public class ManifestValidator {
     }
 
     void validateFCM(Context context) throws InvalidManifestException {
-        final ArrayList<Class<? extends Service>> fcmServices = new ArrayList<Class<? extends Service>>(Arrays.asList(
-                FCMInstanceIDService.class, FCMMessagingService.class
-        ));
-        checkServicesInManifest(fcmServices, context);
+        if(!isInManifest(context, FCMInstanceIDService.class)){
+            throw new InvalidManifestException(FCMInstanceIDService.class.getName() +
+                    " is not registered in your AndroidManifest.xml");
+        }
+
+        if(!isInManifest(context, FCMMessagingService.class)){
+            Log.d(ManifestValidator.class.getSimpleName(), FCMMessagingService.class.getName() +
+                    " is not registered in your AndroidManifest.xml. " +
+                    "If you are implementing your own FirebaseMessagingService this is fine. " +
+                    "If not, you need to add it into your manifest.");
+        }
     }
 
     private void checkServicesInManifest(ArrayList<Class<? extends Service>> list, Context context) throws InvalidManifestException {
         for (Class<? extends Service> service : list) {
             if (!isInManifest(context, service)) {
-                throw new InvalidManifestException(service.getName() +
-                        " is not registered in your AndroidManifest.xml");
+
             }
         }
     }
@@ -52,7 +59,6 @@ public class ManifestValidator {
         List<ResolveInfo> info = context.getPackageManager().queryIntentServices(intent, PackageManager.MATCH_DEFAULT_ONLY);
         return info.size() > 0;
     }
-
 
     public class InvalidManifestException extends Exception {
         InvalidManifestException(String message) {

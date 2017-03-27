@@ -11,12 +11,9 @@ import com.loopj.android.http.JsonHttpResponseHandler;
 import com.pusher.android.PusherAndroidFactory;
 import com.pusher.android.PusherAndroidOptions;
 import com.pusher.android.notifications.PlatformType;
-import com.pusher.android.notifications.interests.SubscriptionManager;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.Stack;
 
 import cz.msebera.android.httpclient.entity.StringEntity;
 
