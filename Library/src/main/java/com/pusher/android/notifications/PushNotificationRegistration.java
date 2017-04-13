@@ -8,7 +8,6 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.messaging.FirebaseMessagingService;
 import com.pusher.android.PusherAndroidFactory;
 import com.pusher.android.PusherAndroidOptions;
 import com.pusher.android.notifications.fcm.FCMInstanceIDService;
@@ -196,7 +195,11 @@ public class PushNotificationRegistration implements InternalRegistrationProgres
     public void onFailedRegistration(int statusCode, String reason) {
         for (Iterator<Subscription> iterator = pendingSubscriptions.iterator(); iterator.hasNext();){
             Subscription subscription = iterator.next();
-            subscription.getListener().onSubscriptionChangeFailed(statusCode, reason);
+
+            if(subscription.getListener() != null) {
+                subscription.getListener().onSubscriptionChangeFailed(statusCode, reason);
+            }
+
             iterator.remove();
         }
     }
