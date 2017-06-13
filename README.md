@@ -13,14 +13,14 @@ You can install the library via Gradle. First add these dependencies to your `$P
 ```groovy
 dependencies {
   // for GCM
-  compile 'com.google.android.gms:play-services-gcm:9.8.0'
+  compile 'com.google.android.gms:play-services-gcm:9.8.0' // This version if often updated by Google Play Services. 
 
   // for FCM
   compile 'com.google.firebase:firebase-messaging:9.8.0'
   compile 'com.google.firebase:firebase-core:9.8.0'
 
 
-  compile 'com.pusher:pusher-websocket-android:0.5.0'
+  compile 'com.pusher:pusher-websocket-android:0.6.0'
 }
 
 // for GCM and FCM
