@@ -174,6 +174,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
       if (playServicesAvailable()) {
+        PusherAndroidOptions options = new PusherAndroidOptions().setCluster(<pusher_app_cluster>);
         PusherAndroid pusher = new PusherAndroid(<pusher_api_key>);
         PushNotificationRegistration nativePusher = pusher.nativePusher();
         String defaultSenderId = getString(R.string.gcm_defaultSenderId); // fetched from your google-services.json
@@ -286,6 +287,7 @@ nativePusher.setFCMListener(new FCMPushNotificationReceivedListener() {
 
 ```java
 PusherAndroidOptions options = new PusherAndroidOptions();
+options.setCluster(<pusher_app_cluster>);
 options.setNotificationHost("yolo.io");
 
 PusherAndroid pusher = new PusherAndroid("key", options);
@@ -297,6 +299,7 @@ The client uses SSL by default. To unset it:
 
 ```java
 PusherAndroidOptions options = new PusherAndroidOptions();
+options.setCluster(<pusher_app_cluster>);
 options.setNotificationEncrypted(false);
 PusherAndroid pusher = new PusherAndroid("key", options);
 ```
