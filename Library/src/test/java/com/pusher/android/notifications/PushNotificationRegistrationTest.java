@@ -27,7 +27,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.shadows.support.v4.ShadowLocalBroadcastManager;
 
 import java.util.List;
@@ -42,6 +41,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
+import org.robolectric.shadow.api.Shadow;
 
 /**
  * Created by jamiepatel on 04/07/2016.
@@ -100,7 +100,7 @@ public class PushNotificationRegistrationTest {
         assertThat(startedIntent.getComponent(), equalTo(expectedIntent.getComponent()));
         Bundle extras = startedIntent.getExtras();
         assertEquals("senderId", extras.getString("gcm_defaultSenderId"));
-        ShadowLocalBroadcastManager localBroadcastManager = (ShadowLocalBroadcastManager) ShadowExtractor.extract(LocalBroadcastManager.getInstance(context));
+        ShadowLocalBroadcastManager localBroadcastManager = (ShadowLocalBroadcastManager) 	Shadow.extract(LocalBroadcastManager.getInstance(context));
         List<ShadowLocalBroadcastManager.Wrapper> receivers = localBroadcastManager.getRegisteredBroadcastReceivers();
         assertEquals(1, receivers.size());
     }
