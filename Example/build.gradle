@@ -18,7 +18,7 @@ android {
 
     defaultConfig {
         applicationId "pusher.example"
-        minSdkVersion 9
+        minSdkVersion 14
         targetSdkVersion 25
         versionCode 1
         versionName "1.0"
@@ -41,8 +41,8 @@ repositories {
     google()
 }
 
-ext.play_services_version = '9.8.0'
-ext.support_lib_version = '25.0.1'
+ext.play_services_version = '11.6.0'
+ext.support_lib_version = '25.4.0'
 
 dependencies {
     compile project(':pusher-websocket-android')
@@ -50,8 +50,7 @@ dependencies {
     compile "com.google.firebase:firebase-core:$play_services_version"
     compile "com.google.android.gms:play-services-gcm:$play_services_version"
     compile "com.android.support:appcompat-v7:$support_lib_version"
-    compile 'com.google.firebase:firebase-messaging:10.0.1'
-    compile 'com.google.firebase:firebase-config:10.0.1'
+    compile "com.google.firebase:firebase-config:$play_services_version"
 }
 
 apply plugin: 'com.google.gms.google-services'
