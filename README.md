@@ -1,6 +1,8 @@
 # Pusher Android Library
 
-pusher-websocket-android is a wrapper library around [pusher-websocket-java](https://github.com/pusher/pusher-websocket-java). Whereas the underlying library is a purely Java library, this library has interaction with Android APIs. As a result, we can provide a better experience for mobile developers. We can also use Pusher's new BETA feature: native push notifications.
+**Looking for Push Notifications? Check out [Pusher Beams](https://pusher.com/beams)**
+
+pusher-websocket-android is a wrapper library around [pusher-websocket-java](https://github.com/pusher/pusher-websocket-java). Whereas the underlying library is a purely Java library, this library has interaction with Android APIs. As a result, we can provide a better experience for mobile developers. 
 
 This README will only cover library-specific features. In order to get the core documentation, please visit the README of [pusher-websocket-java](https://github.com/pusher/pusher-websocket-java).
 
@@ -36,7 +38,8 @@ buildscript {
 }
 ```
 
-## Push Notifications
+## Push Notifications (Replaced by [Pusher Beams](https://pusher.com/beams))
+**This documentation is left here for users of our legacy Push Notifications product. It is no longer possible to register new accounts using this system. If you're looking for a Push Notification solution, check out [Pusher Beams](https://pusher.com/beams), our new and improved Push Notifications product!**
 
 ### GCM
 
