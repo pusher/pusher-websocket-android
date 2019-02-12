@@ -109,6 +109,11 @@ public class PusherAndroid implements Client {
         return this.pusher.getPresenceChannel(channelName);
     }
 
+    /**
+     * @return the client for push notifications
+     * @deprecated this feature is being decommissioned, please use Pusher Beams instead
+     */
+    @Deprecated
     public PushNotificationRegistration nativePusher() {
         return this.pushNotificationRegistration;
     }
