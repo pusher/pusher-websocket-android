@@ -109,6 +109,15 @@ public class PusherAndroid implements Client {
         return this.pusher.getPresenceChannel(channelName);
     }
 
+    /**
+     * @return the client for push notifications
+     * @deprecated Push Notifications are no longer supported in this SDK.
+     *
+     * Please use Pusher Beams, our new Push Notifications product: www.pusher.com/beams
+     * If you're planning to migrate, check our migration guide:
+     * https://pusher.com/docs/push_notifications/migration
+     */
+    @Deprecated
     public PushNotificationRegistration nativePusher() {
         return this.pushNotificationRegistration;
     }
