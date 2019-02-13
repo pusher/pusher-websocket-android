@@ -111,7 +111,11 @@ public class PusherAndroid implements Client {
 
     /**
      * @return the client for push notifications
-     * @deprecated this feature is being decommissioned, please use Pusher Beams instead
+     * @deprecated Push Notifications are no longer supported in this SDK.
+     *
+     * Please use Pusher Beams, our new Push Notifications product: www.pusher.com/beams
+     * If you're planning to migrate, check our migration guide:
+     * https://pusher.com/docs/push_notifications/migration
      */
     @Deprecated
     public PushNotificationRegistration nativePusher() {

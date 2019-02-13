@@ -60,7 +60,11 @@ public class PushNotificationRegistration implements InternalRegistrationProgres
     }
 
     /**
-     * @deprecated this feature is being decommissioned, please use Pusher Beams instead
+     * @deprecated Push Notifications are no longer supported in this SDK.
+     *
+     * Please use Pusher Beams, our new Push Notifications product: www.pusher.com/beams
+     * If you're planning to migrate, check our migration guide:
+     * https://pusher.com/docs/push_notifications/migration
      */
     @Deprecated
     public void registerGCM(Context context, String defaultSenderId) throws ManifestValidator.InvalidManifestException {
@@ -70,7 +74,11 @@ public class PushNotificationRegistration implements InternalRegistrationProgres
     /**
      * Starts a PusherRegistrationIntentService, which handles token receipts and updates from GCM
      *
-     * @deprecated this feature is being decommissioned, please use Pusher Beams instead
+     * @deprecated Push Notifications are no longer supported in this SDK.
+     *
+     * Please use Pusher Beams, our new Push Notifications product: www.pusher.com/beams
+     * If you're planning to migrate, check our migration guide:
+     * https://pusher.com/docs/push_notifications/migration
      */
     @Deprecated
     public void registerGCM(
@@ -113,7 +121,11 @@ public class PushNotificationRegistration implements InternalRegistrationProgres
     }
 
     /**
-     * @deprecated this feature is being decommissioned, please use Pusher Beams instead
+     * @deprecated Push Notifications are no longer supported in this SDK.
+     *
+     * Please use Pusher Beams, our new Push Notifications product: www.pusher.com/beams
+     * If you're planning to migrate, check our migration guide:
+     * https://pusher.com/docs/push_notifications/migration
      */
     @Deprecated
     public void registerFCM(Context context, final PushNotificationRegistrationListener listener) throws ManifestValidator.InvalidManifestException {
@@ -133,7 +145,11 @@ public class PushNotificationRegistration implements InternalRegistrationProgres
     }
 
     /**
-     * @deprecated this feature is being decommissioned, please use Pusher Beams instead
+     * @deprecated Push Notifications are no longer supported in this SDK.
+     *
+     * Please use Pusher Beams, our new Push Notifications product: www.pusher.com/beams
+     * If you're planning to migrate, check our migration guide:
+     * https://pusher.com/docs/push_notifications/migration
      */
     @Deprecated
     public void registerFCM(Context context) throws ManifestValidator.InvalidManifestException {
@@ -141,7 +157,11 @@ public class PushNotificationRegistration implements InternalRegistrationProgres
     }
 
     /**
-     * @deprecated this feature is being decommissioned, please use Pusher Beams instead
+     * @deprecated Push Notifications are no longer supported in this SDK.
+     *
+     * Please use Pusher Beams, our new Push Notifications product: www.pusher.com/beams
+     * If you're planning to migrate, check our migration guide:
+     * https://pusher.com/docs/push_notifications/migration
      */
     @Deprecated
     private TokenRegistry newTokenRegistry(PushNotificationRegistrationListener customerListener, Context context, PlatformType platformType) {
@@ -156,7 +176,11 @@ public class PushNotificationRegistration implements InternalRegistrationProgres
     /**
      * Subscribes to an interest
      *
-     * @deprecated this feature is being decommissioned, please use Pusher Beams instead
+     * @deprecated Push Notifications are no longer supported in this SDK.
+     *
+     * Please use Pusher Beams, our new Push Notifications product: www.pusher.com/beams
+     * If you're planning to migrate, check our migration guide:
+     * https://pusher.com/docs/push_notifications/migration
      */
     @Deprecated
     public void subscribe(String interest) {
@@ -166,7 +190,11 @@ public class PushNotificationRegistration implements InternalRegistrationProgres
     /**
      * Subscribes to an interest
      *
-     * @deprecated this feature is being decommissioned, please use Pusher Beams instead
+     * @deprecated Push Notifications are no longer supported in this SDK.
+     *
+     * Please use Pusher Beams, our new Push Notifications product: www.pusher.com/beams
+     * If you're planning to migrate, check our migration guide:
+     * https://pusher.com/docs/push_notifications/migration
      */
     @Deprecated
     public void subscribe(final String interest, final InterestSubscriptionChangeListener listener) {
@@ -176,7 +204,11 @@ public class PushNotificationRegistration implements InternalRegistrationProgres
     /**
      * Unsubscribes from an interest
      *
-     * @deprecated this feature is being decommissioned, please use Pusher Beams instead
+     * @deprecated Push Notifications are no longer supported in this SDK.
+     *
+     * Please use Pusher Beams, our new Push Notifications product: www.pusher.com/beams
+     * If you're planning to migrate, check our migration guide:
+     * https://pusher.com/docs/push_notifications/migration
      */
     @Deprecated
     public void unsubscribe(String interest) {
@@ -187,7 +219,11 @@ public class PushNotificationRegistration implements InternalRegistrationProgres
     /**
      * Unsubscribes from an interest
      *
-     * @deprecated this feature is being decommissioned, please use Pusher Beams instead
+     * @deprecated Push Notifications are no longer supported in this SDK.
+     *
+     * Please use Pusher Beams, our new Push Notifications product: www.pusher.com/beams
+     * If you're planning to migrate, check our migration guide:
+     * https://pusher.com/docs/push_notifications/migration
      */
     @Deprecated
     public void unsubscribe(final String interest, final InterestSubscriptionChangeListener listener) {
@@ -210,7 +246,11 @@ public class PushNotificationRegistration implements InternalRegistrationProgres
     /**
      * Sets the listener to execute when a notification is received
      *
-     * @deprecated this feature is being decommissioned, please use Pusher Beams instead
+     * @deprecated Push Notifications are no longer supported in this SDK.
+     *
+     * Please use Pusher Beams, our new Push Notifications product: www.pusher.com/beams
+     * If you're planning to migrate, check our migration guide:
+     * https://pusher.com/docs/push_notifications/migration
      */
     @Deprecated
     public void setGCMListener(GCMPushNotificationReceivedListener listener) {
@@ -223,7 +263,11 @@ public class PushNotificationRegistration implements InternalRegistrationProgres
      *
      * @param listener the listener to set.
      *
-     * @deprecated this feature is being decommissioned, please use Pusher Beams instead
+     * @deprecated Push Notifications are no longer supported in this SDK.
+     *
+     * Please use Pusher Beams, our new Push Notifications product: www.pusher.com/beams
+     * If you're planning to migrate, check our migration guide:
+     * https://pusher.com/docs/push_notifications/migration
      */
     @Deprecated
     public void setFCMListener(FCMPushNotificationReceivedListener listener) {
